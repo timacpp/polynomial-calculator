@@ -1,68 +1,58 @@
+/** @file
+  Implementacja klasy wielomianów rzadkich wielu zmiennych
+
+  @author Tymofii Vedmedenko <tv433559@students.mimuw.edu.pl>
+  @copyright Uniwersytet Warszawski
+  @date 2021
+*/
+
 #include "poly.h"
 #include <stdlib.h>
+#include <string.h>
 
-// TO-DO:
-// 1) What does it mean "na własność" (valgrind)
-// 3) Doxygen add maths (
-// 2) Reduce
-// 4) CMake + Debug version
-// 5) Way to long and big functions
-// 6) Should it be in the interface?
-// 7) pow ???
-// 8) Just git and push
-// 10) add static
-
-bool PolyZeroMonos(const Poly *p);
-
-bool MonoIsZero(const Mono *m) {
-    return ((HasConstPoly(m) && PolyIsZero(&m->p)) ||
-            (!HasConstPoly(m) && PolyZeroMonos(&m->p)));
+/**
+ * Sprawdza, czy jednomian jest zerem. Zerowym jednomianem
+ * nazywamy jednomian, przy którym stoi zerowy wielomian.
+ * @param[in] m : jednomian
+ * @return Czy jednomian jest zerem?
+ */
+static inline bool MonoIsZero(const Mono *m) {
+    return PolyIsZero(&m->p);
 }
 
-bool PolyZeroMonos(const Poly *p) {
-    assert(!PolyIsCoeff(p));
-
-    for (size_t curMonoID = 0; curMonoID < p->size; curMonoID++) {
-        if (!MonoIsZero(&p->arr[curMonoID]))
-            return false;
-    }
-
-    return true;
+/**
+ * Daje wskaźnik na wielomian przy jednomianie
+ * @param[in] m : jednomian
+ * @return wskaźnik na wielomian
+ */
+static inline Poly* MonoGetPoly(const Mono *m) {
+    return (Poly*) &m->p;
 }
 
-bool DestroyMonoIfZero(Mono *m) {
-    bool isZero = MonoIsZero(m);
-
-    if (isZero)
-        MonoDestroy(m);
-
-    return isZero;
+/**
+ * Sprawdza, czy wielomian przy jednomianie jest stały.
+ * @param[in] m : jednomian
+ * @return Czy wielomian przy jednomianie jest stały?
+ */
+static inline bool MonoHasConstPoly(const Mono *m) {
+    return PolyIsCoeff(&m->p);
 }
 
-bool PolyOnlyFreeTerm(const Poly *p) {
-    assert(!PolyIsCoeff(p));
+/**
+ * Tworzy pusty niestały wielomian pewnego rozmiaru.
+ * @param[in] polySize : rozmiar wielomianu
+ * @return wielomian ustalonego rozmiaru z alakowaną pamięcią
+ */
+static Poly PolyAllocate(size_t polySize) {
+    Poly resPoly = {
+            .size = polySize,
+            .arr = malloc(polySize * sizeof(Mono))
+    };
 
-    for (size_t curMonoID = 0; curMonoID < p->size; curMonoID++) {
-        if (curMonoID == 0 && MonoIsFreeTerm(&p->arr[0]))
-            continue;
+    if (!resPoly.arr) // W razie błędu alokacji pamięci
+        exit(1); // kończymy program awaryjnym kodem 1.
 
-        else if (!MonoIsZero(&p->arr[curMonoID]))
-            return false;
-    }
-
-    return true;
-}
-
-void PolyReduceToCoeff(Poly *p) {
-    assert(!PolyIsCoeff(p));
-
-    if (!PolyOnlyFreeTerm(p))
-        return;
-
-    Poly coeffPoly = PolyFromCoeff(PolyGetFreeTerm(p));
-
-    PolyDestroy(p);
-    *p = coeffPoly;
+    return resPoly;
 }
 
 void PolyDestroy(Poly *p) {
@@ -76,13 +66,18 @@ void PolyDestroy(Poly *p) {
         free(p->arr);
 }
 
-void PolyDeepCopy(const Poly* p, Poly* pCopy) {
+/**
+ * Tworzy głęboką kopię wielomianu p, zapisując ją do pCopy.
+ * @param[in] p : wielomian do kopiowania (source)
+ * @param[in] pCopy : wielomian do zapisywania (destination)
+ */
+static void PolyDeepCopy(const Poly* p, Poly* pCopy) {
     if (PolyIsCoeff(p)) {
         pCopy->coeff = p->coeff;
         return;
     }
 
-    *pCopy = PolyFromSize(p->size);
+    *pCopy = PolyAllocate(p->size);
 
     for (size_t curMonoID = 0; curMonoID < p->size; curMonoID++)
         pCopy->arr[curMonoID] = MonoClone(&p->arr[curMonoID]);
@@ -90,65 +85,131 @@ void PolyDeepCopy(const Poly* p, Poly* pCopy) {
 
 Poly PolyClone(const Poly *p) {
     Poly pCopy = PolyZero();
-
     PolyDeepCopy(p, &pCopy);
 
     return pCopy;
 }
 
-Poly PolyAddNoConst(const Poly *p, const Poly *q) {
+/**
+ * Zmniejsza rozmiar wielomianu do newSize oraz
+ * redukuje wielomian niestały do stałego, jeżeli on
+ * się składa tylko z jednego jednomianu postaci @f$c * x^0@f$
+ * @param[in] p : wielomian
+ * @param[in] newSize : nowy rozmiar
+ */
+static void PolyReduce(Poly *p, size_t newSize) {
+    assert(!PolyIsCoeff(p) && newSize <= p->size);
+
+    // Zmiejszenie rozmiaru wielomianu
+    p->size = newSize;
+
+    bool freeTermOnly = p->size == 1 &&
+                        MonoGetExp(&p->arr[0]) == 0 &&
+                        MonoHasConstPoly(&p->arr[0]);
+
+    // Wielomian, który ma niezerowy rozmiar oraz nie składa się z jednego
+    // jednomianu postaci c * x^0 nie da się zredukować do wielomianu stalego.
+    if (newSize != 0 && !freeTermOnly)
+        return;
+
+    // Redukujemy wielomian do zerowego, gdy jego rozmiar jest zerowy,
+    // a w p.p. do współczynnika 'c' we wzorze na wielomian c * x^0.
+    poly_coeff_t newCoeff = (p->size > 0 ? MonoGetPoly(&p->arr[0])->coeff : 0);
+
+    PolyDestroy(p);
+    *p = PolyFromCoeff(newCoeff);
+}
+
+
+/**
+ * Dodaje dwa jednomiany jednego stopnia.
+ * @param[in] m1 : jednomian @f$m_1@f$
+ * @param[in] m2 : jednomian @f$m_2@f$
+ * @return @f$m_1 + m_2@f$
+ */
+static inline Mono MonoAdd(const Mono *m1, const Mono *m2) {
+    assert(MonoGetExp(m1) == MonoGetExp(m2));
+    return (Mono) {
+        .exp = MonoGetExp(m1),
+        .p = PolyAdd(MonoGetPoly(m1), MonoGetPoly(m2))
+    };
+}
+
+/**
+ * Dodaje dwa wielomiany niestale.
+ * @param[in] p : niestały wielomian @f$p@f$
+ * @param[in] q : niestały wielomian @f$q@f$
+ * @return @f$p + q@f$
+ */
+static Poly PolyAddNoConst(const Poly *p, const Poly *q) {
     assert(!PolyIsCoeff(p) && !PolyIsCoeff(q));
 
-    Poly sumPoly = PolyFromSize(p->size + q->size);
-    size_t sumMonoID = 0, pMonoID = 0, qMonoID = 0;
+    size_t resMonoID = 0, pMonoID = 0, qMonoID = 0;
+    Poly resPoly = PolyAllocate(p->size + q->size);
 
+    // Wstawiamy do wielomianu resPoly jednomian o mniejszej potędze
+    // wsród jednomianów o indeksach pMonoID, qMonoID z wielomianów p, q odpowiednio.
     while (pMonoID < p->size && qMonoID < q->size) {
         if (MonoGetExp(&p->arr[pMonoID]) < MonoGetExp(&q->arr[qMonoID])) {
-            sumPoly.arr[sumMonoID++] = MonoClone(&p->arr[pMonoID++]);
+            resPoly.arr[resMonoID++] = MonoClone(&p->arr[pMonoID++]);
         } else if (MonoGetExp(&p->arr[pMonoID]) > MonoGetExp(&q->arr[qMonoID])) {
-            sumPoly.arr[sumMonoID++] = MonoClone(&q->arr[qMonoID++]);
+            resPoly.arr[resMonoID++] = MonoClone(&q->arr[qMonoID++]);
         } else {
-            sumPoly.arr[sumMonoID] = MonoAdd(&p->arr[pMonoID++], &q->arr[qMonoID++]);
-            if (!DestroyMonoIfZero(&sumPoly.arr[sumMonoID]))
-                sumMonoID++;
+            Mono midResult = MonoAdd(&p->arr[pMonoID++], &q->arr[qMonoID++]);
+            if (!MonoIsZero(&midResult)) // Jeżeli wynik dodawania jest zerem
+                resPoly.arr[resMonoID++] = midResult; // to nie wstawiamy go do wielomianu.
         }
     }
 
+    // Jeżeli wielomiany p, q są różnych rozmiarów,
+    // to doklejamy pozostale jednomiany większego do końca.
     while (pMonoID < p->size)
-        sumPoly.arr[sumMonoID++] = MonoClone(&p->arr[pMonoID++]);
+        resPoly.arr[resMonoID++] = MonoClone(&p->arr[pMonoID++]);
     while (qMonoID < q->size)
-        sumPoly.arr[sumMonoID++] = MonoClone(&q->arr[qMonoID++]);
+        resPoly.arr[resMonoID++] = MonoClone(&q->arr[qMonoID++]);
 
-    PolySetSize(&sumPoly, sumMonoID);
-    PolyReduceToCoeff(&sumPoly);
+    PolyReduce(&resPoly, resMonoID);
 
-    return sumPoly;
+    return resPoly;
 }
 
-Poly PolyAddOneConst(const Poly* p, const Poly* q) {
+/**
+ * Dodaje stały wielomian p i niestały wielomian q.
+ * @param[in] p : stały wielomian @f$p@f$
+ * @param[in] q : niestały wielomian @f$q@f$
+ * @return @f$p + q@f$
+ */
+static Poly PolyAddOneConst(const Poly* p, const Poly* q) {
     assert(PolyIsCoeff(p) && !PolyIsCoeff(q));
 
-    Poly sumPoly = PolyFromSize(q->size + 1);
-    Mono constantMono = (Mono) {.exp = 0, .p = PolyClone(p)};
-    size_t sumMonoID = 0, qMonoID = 0;
+    size_t resMonoID = 0, qMonoID = 0;
+    Mono constTermMono = MonoFromPoly(p, 0);
+    Poly resPoly = PolyAllocate(q->size + 1);
 
-    if (MonoGetExp(&q->arr[qMonoID]) != 0)
-        sumPoly.arr[sumMonoID] = constantMono;
-    else
-        sumPoly.arr[sumMonoID] = MonoAdd(&constantMono, &q->arr[qMonoID++]);
+    // Pierwszy jednomian w wielomianie resPoly
+    Mono newFreeTerm = MonoGetExp(&q->arr[qMonoID]) == 0 ?
+                       MonoAdd(&constTermMono, &q->arr[qMonoID++]) :
+                       constTermMono;
 
-    if (!DestroyMonoIfZero(&sumPoly.arr[sumMonoID]))
-        sumMonoID++;
+    if (!MonoIsZero(&newFreeTerm)) // Jeżeli wyraz wolny nie jest zerem,
+        resPoly.arr[resMonoID++] = newFreeTerm; // to dodajemy go do resPoly.
+
+    // Doklejamy pozostale jednomiany wielomianu q do końca resPoly.
     while (qMonoID < q->size)
-        sumPoly.arr[sumMonoID++] = MonoClone(&q->arr[qMonoID++]);
+        resPoly.arr[resMonoID++] = MonoClone(&q->arr[qMonoID++]);
 
-    PolySetSize(&sumPoly, sumMonoID);
-    PolyReduceToCoeff(&sumPoly);
+    PolyReduce(&resPoly, resMonoID);
 
-    return sumPoly;
+    return resPoly;
 }
 
-static Poly PolyAddBothConst(const Poly *p, const Poly *q) {
+/**
+ * Dodaje dwa stałe wielomiany.
+ * @param[in] p : stały wielomian @f$p@f$
+ * @param[in] q : stały wielomian @f$q@f$
+ * @return @f$p + q@f$
+ */
+Poly PolyAddBothConst(const Poly *p, const Poly *q) {
     assert(PolyIsCoeff(p) && PolyIsCoeff(q));
     return PolyFromCoeff(p->coeff + q->coeff);
 }
@@ -158,104 +219,156 @@ Poly PolyAdd(const Poly *p, const Poly *q) {
         return PolyAddBothConst(p, q);
     else if (!PolyIsCoeff(p) && !PolyIsCoeff(q))
         return PolyAddNoConst(p, q);
-    return(PolyIsCoeff(p) ? PolyAddOneConst(p, q) : PolyAddOneConst(q, p));
+    return (PolyIsCoeff(p) ? PolyAddOneConst(p, q) : PolyAddOneConst(q, p));
 }
 
-int MonoComparator(const void* m1, const void* m2) {
+/**
+ * Dodaje wielomian @f$q@f$ do wielomiana @f$p@f$
+ * Wielomian @f$p@f$ jest przyjmowany na własność.
+ * @param[in] p : wielomian do aktualizacji @f$p@f$
+ * @param[in] q : wielomian do dodawania @f$q@f$
+ */
+static void PolyAddTo(Poly *p, const Poly *q) {
+    Poly midResult = PolyAdd(p, q);
+    PolyDestroy(p);
+    *p = midResult;
+}
+
+/**
+ * Dodaje jednomian @f$m_2@f$ do jednomiana @f$m_1@f$
+ * Jednomian @f$m_1@f$ jest przyjmowany na własność.
+ * @param[in] m1 : jednomian do aktualizacji @f$m_1@f$
+ * @param[in] m2 : jednomian do dodawania @f$m_2@f$
+ */
+static void MonoAddTo(Mono *m1, const Mono *m2) {
+    Mono midResult = MonoAdd(m1, m2);
+    MonoDestroy(m1);
+    *m1 = midResult;
+}
+
+/**
+ * Komparator dla sortowania tablicy jednomianów
+ * w porządku rosnącym według wartości potęg.
+ * @param[in] m1 : jednomian @f$m_1@f$
+ * @param[in] m2 : jednomian @f$m_2@f$
+ * @return @f$deg(m_1) - deg(m_2)@f$
+ */
+static inline int MonoComparator(const void* m1, const void* m2) {
      return (MonoGetExp(m1) - MonoGetExp(m2));
 }
 
-void RecursiveMonoArraySort(size_t count, Mono* monos) {
-    qsort(monos, count, sizeof(Mono), MonoComparator);
-
-    for (size_t curMonoID = 0; curMonoID < count; curMonoID++) {
-        if (!HasConstPoly(&monos[curMonoID]))
-            RecursiveMonoArraySort(monos[curMonoID].p.size, monos[curMonoID].p.arr);
-    }
-}
-
-size_t countDifferentExps(size_t count, Mono* monos) {
-    size_t expCounter = (count > 0);
-
-    for (size_t curMonoID = 0; curMonoID + 1 < count; curMonoID++) {
-        if (MonoGetExp(&monos[curMonoID]) != MonoGetExp(&monos[curMonoID + 1]))
-            expCounter++;
-    }
-
-    return expCounter;
-}
-
 Poly PolyAddMonos(size_t count, const Mono monos[]) {
-    if (count == 0)
-        return PolyZero();
-
-    RecursiveMonoArraySort(count, (Mono*) monos);
-    Poly res = PolyFromSize(countDifferentExps(count, (Mono*) monos));
     size_t resMonoID = 0;
+    Poly resPoly = PolyAllocate(count);
+
+    // Kopiujemy tablice jednomianów, aby je posortować.
+    Mono* monosCopy = malloc(count * sizeof(Mono));
+    memcpy(monosCopy, monos, count * sizeof(Mono));
+
+    qsort(monosCopy, count, sizeof(Mono), MonoComparator);
 
     for (size_t curMonoID = 0; curMonoID < count; curMonoID++) {
-        poly_exp_t curExp = MonoGetExp(&monos[curMonoID]);
-        res.arr[resMonoID] = monos[curMonoID]; // ok
+        poly_exp_t curExp = MonoGetExp(&monosCopy[curMonoID]);
+        Mono midResult = monosCopy[curMonoID];
 
-        while (curMonoID + 1 < count && MonoGetExp(&monos[curMonoID + 1]) == curExp) {
-            res.arr[resMonoID] = MonoAdd(&res.arr[resMonoID], &monos[curMonoID + 1]);
-            curMonoID++;
+        // Sumujemy wszystkie jednomiany o tej samej potędze.
+        for (; curMonoID + 1 < count; curMonoID++) {
+            if (MonoGetExp(&monosCopy[curMonoID + 1]) != curExp)
+                break;
+            MonoAddTo(&midResult, &monosCopy[curMonoID + 1]);
+            MonoDestroy(&monosCopy[curMonoID + 1]);
         }
 
-       if (!DestroyMonoIfZero(&res.arr[resMonoID]))
-           resMonoID++;
+       if (!MonoIsZero(&midResult)) // Jeżeli wynik sumowania nie jest zerem,
+           resPoly.arr[resMonoID++] = midResult; // to dodajemy go do końca resPoly.
     }
 
-    PolySetSize(&res, resMonoID);
-    PolyReduceToCoeff(&res);
+    PolyReduce(&resPoly, resMonoID);
+    free(monosCopy);
 
-    return res;
+    return resPoly;
 }
 
-Poly PolyMulBothConst(const Poly *p, const Poly *q) {
-    assert(PolyIsCoeff(p) && PolyIsCoeff(q));
-    return PolyFromCoeff(p->coeff * q->coeff);
+/**
+ * Mnoży dwa jednomiany.
+ * @param[in] m1 : jednomian @f$m_1@f$
+ * @param[in] m2 : jednomian @f$m_2@f$
+ * @return @f$m1 * m2@f$
+ */
+static inline Mono MonoMul(const Mono *m1, const Mono *m2) {
+    return (Mono) {
+        .exp = MonoGetExp(m1) + MonoGetExp(m2),
+        .p = PolyMul(MonoGetPoly(m1), MonoGetPoly(m2))
+    };
 }
 
-Poly PolyMulOneConst(const Poly *p, const Poly *q) {
+/**
+ * Mnoży dwa wielomiany niestale.
+ * @param[in] p : niestały wielomian @f$p@f$
+ * @param[in] q : niestały wielomian @f$q@f$
+ * @return @f$p * q@f$
+ */
+static Poly PolyMulNoConst(const Poly *p, const Poly *q) {
+    assert(!PolyIsCoeff(p) && !PolyIsCoeff(q));
+
+    size_t resMonoID = 0;
+    Poly resPoly = PolyAllocate(p->size * q->size);
+
+    // Dodajemy do resPoly wyniki mnożenia parami jednomianów z wielomianów p, q.
+    for (size_t pMonoID = 0; pMonoID < p->size; pMonoID++) {
+        for (size_t qMonoID = 0; qMonoID < q->size; qMonoID++) {
+            resPoly.arr[resMonoID++] = MonoMul(&p->arr[pMonoID], &q->arr[qMonoID]);
+        }
+    }
+
+    PolyReduce(&resPoly, resMonoID);
+
+    // Tworzymy kopię wielomianu resPoly, sortując i grupując wyrazy.
+    Poly resPolySorted = PolyAddMonos(resPoly.size, resPoly.arr);
+
+    // Zwolniamy pamięć do tablicy jednomianów w nieposortowanym wielomianie
+    free(resPoly.arr);
+
+    return resPolySorted;
+}
+
+/**
+ * Mnoży stały wielomian p i niestały q.
+ * @param[in] p : stały wielomian @f$p@f$
+ * @param[in] q : niestały wielomian @f$q@f$
+ * @return @f$p * q@f$
+ */
+static Poly PolyMulOneConst(const Poly *p, const Poly *q) {
     assert(PolyIsCoeff(p) && !PolyIsCoeff(q));
 
     if (PolyIsZero(p))
         return PolyZero();
 
-    Mono constMono = {.exp = 0, .p = PolyFromCoeff(p->coeff)};
-    Poly multiPoly = PolyFromSize(q->size);
-    size_t multiMonoID = 0;
+    size_t resMonoID = 0;
+    Poly resPoly = PolyAllocate(q->size);
+    Mono constTermMono = MonoFromPoly(p, 0); // Jednomian p * x^0.
 
-    for (size_t qMonoID = 0; qMonoID < q->size; qMonoID++)
-        multiPoly.arr[multiMonoID++] = MonoMul(&constMono, &q->arr[qMonoID]);
-
-    PolySetSize(&multiPoly, multiMonoID);
-    PolyReduceToCoeff(&multiPoly);
-
-    return multiPoly;
-}
-
-Poly PolyMulNoConst(const Poly *p, const Poly *q) {
-    assert(!PolyIsCoeff(p) && !PolyIsCoeff(q));
-
-    Poly multiPoly = PolyFromSize(p->size * q->size);
-    size_t multiMonoID = 0;
-
-    for (size_t pMonoID = 0; pMonoID < p->size; pMonoID++) {
-        for (size_t qMonoID = 0; qMonoID < q->size; qMonoID++) {
-            multiPoly.arr[multiMonoID++] = MonoMul(&p->arr[pMonoID], &q->arr[qMonoID]);
-        }
+    // Dodajemy do resPoly wynik mnożenia każdego jednomianu z q przez stały jednomian.
+    for (size_t qMonoID = 0; qMonoID < q->size; qMonoID++) {
+        Mono midResult = MonoMul(&constTermMono, &q->arr[qMonoID]);
+        if (!MonoIsZero(&midResult)) // Jeżeli nie zdarzył overflow typu,
+            resPoly.arr[resMonoID++] = midResult; // to dodajemy do końca resPoly.
     }
 
-    PolySetSize(&multiPoly, multiMonoID);
+    PolyReduce(&resPoly, resMonoID);
 
-    Poly sortedMultiPoly = PolyClone(&multiPoly);
-    PolyDestroy(&multiPoly);
+    return resPoly;
+}
 
-    sortedMultiPoly = PolyAddMonos(sortedMultiPoly.size, sortedMultiPoly.arr);
-
-    return sortedMultiPoly;
+/**
+ * Mnoży dwa stale wielomiany.
+ * @param[in] p : stały wielomian @f$p@f$
+ * @param[in] q : stały wielomian @f$q@f$
+ * @return @f$p * q@f$
+ */
+static Poly PolyMulBothConst(const Poly *p, const Poly *q) {
+    assert(PolyIsCoeff(p) && PolyIsCoeff(q));
+    return PolyFromCoeff(p->coeff * q->coeff);
 }
 
 Poly PolyMul(const Poly *p, const Poly *q) {
@@ -272,53 +385,68 @@ Poly PolyNeg(const Poly *p) {
 }
 
 Poly PolySub(const Poly *p, const Poly *q) {
-    const Poly qNegated = PolyNeg(q);
-    return PolyAdd(p, &qNegated);
+    Poly qNegated = PolyNeg(q);
+    Poly resPoly = PolyAdd(p, &qNegated);
+
+    PolyDestroy(&qNegated);
+    return resPoly;
 }
 
-poly_coeff_t power(poly_coeff_t base, poly_exp_t power) {
-    if (power == 0)
+/**
+ * Podniesienie do potęgi w czasie logarytmicznym.
+ * @param[in] base : wykładnik @f$x@f$
+ * @param[in] exp : potęga @f$n@f$
+ * @return @f$x^n@f$
+ */
+static poly_coeff_t ToPower(poly_coeff_t base, poly_exp_t exp) {
+    if (exp == 0)
         return 1;
 
-    poly_coeff_t res = 1;
-    for (int i = 0; i < power; i++)
-        res *= base;
-
-    return res;
+    poly_coeff_t sqrtResult = ToPower(base, exp / 2);
+    return sqrtResult * sqrtResult * (exp & 1 ? base : 1);
 }
 
 Poly PolyAt(const Poly *p, poly_coeff_t x) {
-//    if (PolyIsCoeff(p))
-//        return PolyClone(p);
-//
-//    size_t curMonoID = 0;
-//    Mono* newMonos = malloc(p->size * sizeof(Mono));
-//
-//    while (curMonoID < p->size) {
-//        poly_coeff_t newCoeff = power(x, MonoGetExp(&newMonos[curMonoID]));
-//        Poly coeffPoly = PolyFromCoeff(newCoeff);
-//
-//        newMonos[curMonoID] = (Mono) {
-//            .p = PolyMul(&coeffPoly, MonoGetPoly(&p->arr[curMonoID])),
-//            .exp = MonoDegBy()
-//        };
-//
-//        curMonoID++;
-//    }
-//
-//    return PolyAddMonos(curMonoID, newMonos);
+    if (PolyIsCoeff(p))
+        return PolyClone(p);
+
+    Poly resPoly = PolyZero();
+
+    for (size_t pMonoID = 0; pMonoID < p->size; pMonoID++) {
+        // Obliczenie wyrazu x^n, gdzie n - potęga obecnego jednomianu z 'p'
+        poly_exp_t curExp = MonoGetExp(&p->arr[pMonoID]);
+        poly_coeff_t newCoeff = ToPower(x, curExp);
+
+        // Obiczenie wartości jednomiana w punkcie 'x'
+        Poly coeffPoly = PolyFromCoeff(newCoeff);
+        Poly midResult = PolyMul(MonoGetPoly(&p->arr[pMonoID]),
+                                 &coeffPoly);
+
+        // Aktualizacja wyniku drogą dodawania do niego jednomiana.
+        if (!PolyIsZero(&midResult))
+            PolyAddTo(&resPoly, &midResult);
+
+        PolyDestroy(&midResult);
+    }
+
+    return resPoly;
+}
+
+static inline poly_exp_t MonoDegBy(const Mono *m, size_t var_idx) {
+    return PolyDegBy(&m->p, var_idx - 1);
 }
 
 poly_exp_t PolyDegBy(const Poly *p, size_t var_idx) {
     if (PolyIsCoeff(p))
         return (PolyIsZero(p) ? -1 : 0);
-    else if (var_idx == 0)
-        return MonoGetExp(&p->arr[p->size - 1]);
+    else if (var_idx == 0) // Jeżeli obecny poziom rekurencji odpowiada var_idx,
+        return MonoGetExp(&p->arr[p->size - 1]); // to zwracamy największą potęgę.
 
+    // Szukamy największy stopień jednomianu ze wzgłędu na var_idx.
     poly_exp_t maxMonoDegByIdx = 0;
 
-    for (size_t curMonoID = 0; curMonoID < p->size; curMonoID++) {
-        poly_exp_t curDeg = MonoDegBy(&p->arr[curMonoID], var_idx);
+    for (size_t pMonoID = 0; pMonoID < p->size; pMonoID++) {
+        poly_exp_t curDeg = MonoDegBy(&p->arr[pMonoID], var_idx);
 
         if (maxMonoDegByIdx < curDeg)
             maxMonoDegByIdx = curDeg;
@@ -327,14 +455,19 @@ poly_exp_t PolyDegBy(const Poly *p, size_t var_idx) {
     return maxMonoDegByIdx;
 }
 
+static inline poly_exp_t MonoDeg(const Mono *m) {
+    return MonoGetExp(m) * (MonoHasConstPoly(m) ? 1 : PolyDeg(&m->p));
+}
+
 poly_exp_t PolyDeg(const Poly *p) {
     if (PolyIsCoeff(p))
         return (PolyIsZero(p) ? -1 : 0);
 
+    // Szukamy największy stopień jednomianu.
     poly_exp_t maxMonoDeg = 0;
 
-    for (size_t curMonoID = 0; curMonoID < p->size; curMonoID++) {
-        poly_exp_t curDeg = MonoDeg(&p->arr[curMonoID]);
+    for (size_t pMonoID = 0; pMonoID < p->size; pMonoID++) {
+        poly_exp_t curDeg = MonoDeg(&p->arr[pMonoID]);
 
         if (curDeg > maxMonoDeg)
             maxMonoDeg = curDeg;
@@ -343,21 +476,21 @@ poly_exp_t PolyDeg(const Poly *p) {
     return maxMonoDeg;
 }
 
-bool MonoIsEq(const Mono *m1, const Mono *m2) {
-    return (MonoGetExp(m1) == MonoGetExp(m2) && PolyIsEq(MonoGetPoly(m1), MonoGetPoly(m2)));
-}
-
-bool PolyIsEqConst(const Poly *p, const Poly *q) {
-    assert(PolyIsCoeff(p) && !PolyIsCoeff(q));
-    return (PolyOnlyFreeTerm(q) && PolyGetFreeTerm(q) == p->coeff);
+/**
+ * Sprawdza równość dwóch jednomianów.
+ * @param[in] m1 : jednomian @f$m_1@f$
+ * @param[in] m2 : jednomian @f$m_2@f$
+ * @return @f$m_1 = m_2@f$
+ */
+static inline bool MonoIsEq(const Mono *m1, const Mono *m2) {
+    return (MonoGetExp(m1) == MonoGetExp(m2) &&
+            PolyIsEq(MonoGetPoly(m1), MonoGetPoly(m2)));
 }
 
 bool PolyIsEq(const Poly *p, const Poly *q) {
     if (PolyIsCoeff(p) && PolyIsCoeff(q))
         return (p->coeff == q->coeff);
-    else if (PolyIsCoeff(p) || PolyIsCoeff(q))
-        return (PolyIsCoeff(p) ? PolyIsEqConst(p, q) : PolyIsEqConst(q, p));
-    else if (p->size != q->size)
+    else if (PolyIsCoeff(p) || PolyIsCoeff(q) || p->size != q->size)
         return false;
 
     for (size_t curMonoID = 0; curMonoID < p->size; curMonoID++) {
