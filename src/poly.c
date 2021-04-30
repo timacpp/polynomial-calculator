@@ -2,7 +2,7 @@
   Implementacja klasy wielomianów rzadkich wielu zmiennych.
   Przyjmiemy pewne założenia o wielomianach:
 
-  (a) Wielomian ma posortowane jednomiany w porządku rosnącym według wartości potęg.
+  (a) Wielomian ma posortowane jednomiany w porządku rosnącym według wykładników.
 
   (b) Wielomian jest stały wtedy i tylko wtedy, gdy nie ma jednomianów.
 
@@ -258,7 +258,7 @@ static void MonoAddTo(Mono *m1, const Mono *m2) {
  * w porządku rosnącym według wartości potęg.
  * @param[in] m1 : jednomian @f$m_1@f$
  * @param[in] m2 : jednomian @f$m_2@f$
- * @return róznica wartości potęg
+ * @return róznica wykładników
  */
 static inline int MonoComparator(const void* m1, const void* m2) {
      return (MonoGetExp(m1) - MonoGetExp(m2));
@@ -403,8 +403,8 @@ Poly PolySub(const Poly *p, const Poly *q) {
 
 /**
  * Podniesienie do potęgi w czasie logarytmicznym.
- * @param[in] base : wykładnik @f$x@f$
- * @param[in] exp : potęga @f$n@f$
+ * @param[in] base : podstawa @f$x@f$
+ * @param[in] exp : wykładnik @f$n@f$
  * @return @f$x^n@f$
  */
 static poly_coeff_t ToPower(poly_coeff_t base, poly_exp_t exp) {
