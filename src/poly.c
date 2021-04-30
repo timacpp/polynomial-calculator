@@ -1,5 +1,12 @@
 /** @file
-  Implementacja klasy wielomianów rzadkich wielu zmiennych
+  Implementacja klasy wielomianów rzadkich wielu zmiennych.
+  Przyjmiemy pewne założenia o wielomianach:
+
+  (a) Wielomian ma posortowane jednomiany w porządku rosnącym według wartości potęg.
+
+  (b) Wielomian jest stały wtedy i tylko wtedy, gdy nie ma jednomianów.
+
+  (c) Wielomian niestały nie może mieć zerowego jednomianu.
 
   @author Tymofii Vedmedenko <tv433559@students.mimuw.edu.pl>
   @copyright Uniwersytet Warszawski
@@ -209,7 +216,7 @@ static Poly PolyAddOneConst(const Poly* p, const Poly* q) {
  * @param[in] q : stały wielomian @f$q@f$
  * @return @f$p + q@f$
  */
-Poly PolyAddBothConst(const Poly *p, const Poly *q) {
+static Poly PolyAddBothConst(const Poly *p, const Poly *q) {
     assert(PolyIsCoeff(p) && PolyIsCoeff(q));
     return PolyFromCoeff(p->coeff + q->coeff);
 }
@@ -251,7 +258,7 @@ static void MonoAddTo(Mono *m1, const Mono *m2) {
  * w porządku rosnącym według wartości potęg.
  * @param[in] m1 : jednomian @f$m_1@f$
  * @param[in] m2 : jednomian @f$m_2@f$
- * @return @f$deg(m_1) - deg(m_2)@f$
+ * @return róznica wartości potęg
  */
 static inline int MonoComparator(const void* m1, const void* m2) {
      return (MonoGetExp(m1) - MonoGetExp(m2));
@@ -317,7 +324,9 @@ static Poly PolyMulNoConst(const Poly *p, const Poly *q) {
     // Dodajemy do resPoly wyniki mnożenia parami jednomianów z wielomianów p, q.
     for (size_t pMonoID = 0; pMonoID < p->size; pMonoID++) {
         for (size_t qMonoID = 0; qMonoID < q->size; qMonoID++) {
-            resPoly.arr[resMonoID++] = MonoMul(&p->arr[pMonoID], &q->arr[qMonoID]);
+            Mono midResult = MonoMul(&p->arr[pMonoID], &q->arr[qMonoID]);
+            if (!MonoIsZero(&midResult)) // Jeżeli nie zdarzył overflow typu,
+                resPoly.arr[resMonoID++] = midResult; // to dodajemy do końca resPoly.
         }
     }
 
