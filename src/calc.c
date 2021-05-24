@@ -44,12 +44,6 @@ bool LineRepresentsCommand() {
     return isalpha(peek);
 }
 
-void IgnoreLine() {
-    char curChar = (char) getchar();
-    while (curChar != EOF && curChar != '\n')
-        curChar = (char) getchar();
-}
-
 int main(void) {
     PolyStack stack;
     StackInitialize(&stack);
