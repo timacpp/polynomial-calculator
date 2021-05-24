@@ -15,6 +15,7 @@
 
 #include "poly.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 /**
@@ -265,6 +266,9 @@ static inline int MonoComparator(const void* m1, const void* m2) {
 }
 
 Poly PolyAddMonos(size_t count, const Mono monos[]) {
+    if (count == 0)
+        return PolyZero();
+
     size_t resMonoID = 0;
     Poly resPoly = PolyAllocate(count);
 
@@ -465,7 +469,7 @@ poly_exp_t PolyDegBy(const Poly *p, size_t var_idx) {
 }
 
 static inline poly_exp_t MonoDeg(const Mono *m) {
-    return MonoGetExp(m) * (MonoHasConstPoly(m) ? 1 : PolyDeg(&m->p));
+    return MonoGetExp(m) + PolyDeg(&m->p);
 }
 
 poly_exp_t PolyDeg(const Poly *p) {
@@ -509,6 +513,3 @@ bool PolyIsEq(const Poly *p, const Poly *q) {
 
     return true;
 }
-
-
-

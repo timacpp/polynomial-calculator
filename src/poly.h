@@ -24,13 +24,13 @@ struct Mono;
 /**
  * To jest struktura przechowująca wielomian.
  * Wielomian jest albo liczbą całkowitą, czyli wielomianem stałym
- * (wtedy `arr == NULL`), albo niepustą listą jednomianów (wtedy `arr != NULL`).
+ * (wtedy `content == NULL`), albo niepustą listą jednomianów (wtedy `content != NULL`).
  */
 typedef struct Poly {
   /**
   * To jest unia przechowująca współczynnik wielomianu lub
   * liczbę jednomianów w wielomianie.
-  * Jeżeli `arr == NULL`, wtedy jest to współczynnik będący liczbą całkowitą.
+  * Jeżeli `content == NULL`, wtedy jest to współczynnik będący liczbą całkowitą.
   * W przeciwnym przypadku jest to niepusta lista jednomianów.
   */
   union {
@@ -150,7 +150,7 @@ Poly PolyAdd(const Poly *p, const Poly *q);
 
 /**
  * Sumuje listę jednomianów i tworzy z nich wielomian.
- * Przejmuje na własność zawartość tablicy @p monos.
+ * Przejmuje na własność zawartość tablicy @p content.
  * @param[in] count : liczba jednomianów
  * @param[in] monos : tablica jednomianów
  * @return wielomian będący sumą jednomianów
