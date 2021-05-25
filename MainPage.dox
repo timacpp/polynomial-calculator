@@ -7,12 +7,9 @@ Uwaga: aktualna treść zadania znajduje się w [Moodle](https://moodle.mimuw.ed
 
 ### Opis programu
 
-Tegoroczne duże zadanie polega na zaimplementowaniu operacji na wielomianach
-rzadkich wielu zmiennych.
+Tegoroczne duże zadanie polega na zaimplementowaniu ONP kalkulatora wielu zmiennych.
 
-Program oferuje optymalne reprezentowanie wielomianów na podstawie jednomianów wielu zmiennych.
-
-Operacji do dyspozycji użytkownika to m.in. dodawanie, mnożenie, sprawdzenie równości, a także obliczenie wartości w podanym punkcie.
+Kalulator potrafi wczytywac wielomiany, a zatem wykonywać mnożenie, dodawanie, obliczenie stopniu, wyliczania wartości w punkcie itp.
 
 
 */

@@ -11,40 +11,23 @@
 
 #include "poly_stack.h"
 
-/** To jest typ uogólniający możliwe błędy operacyjne kalkulatora. */
-typedef enum CalcError {
-    WRONG_POLY,
-    WRONG_COMMAND,
-    WRONG_AT_VALUE,
-    STACK_UNDERFLOW,
-    WRONG_DEG_VARIABLE,
-} CalcError;
+/**
+ * Daje sygnal kalkulatorowi do wczytania linijki zawierającej komendę.
+ * W przypadku wczytania poprawnej komendy zostanie wykonanie podane
+ * polecenie nad stosem @p stack, a w przeciwnym przypadku będzie
+ * wypisany błąd na odpowiednie wyjście.
+ * @param[in] stack: stos z wielomianami
+ * @param[in] lineNumber : numer linijki, która będzie wczytana
+ */
+void ProcessCommandInput(PolyStack* stack, int lineNumber);
 
 /**
- * Wypisuje błąd na wyjście błędów
- * @param[in] error : błąd
- * @param[in] line : numer linijki
+ * Daje sygnal kalkulatorowi do wczytania linijki zawierającej wielomian.
+ * W przypadku wczytania poprawnego wielomianu zostanie on dodany do stosu @p stack,
+ * a w przeciwnym przypadku będzie wypisany błąd na odpowiednie wyjście.
+ * @param[in] stack: stos z wielomianami
+ * @param[in] lineNumber : numer linijki, która będzie wczytana
  */
-void PrintError(CalcError error, int line);
-
-/**
- * Wczytuje komendę reprezentowaną jako napis do wartości przekazanego
- * wzkaźnika. Jeżeli podczas wczytania wystąpi nielegalny symbol komendy
- * albo zostanie uznany niepoprawny porządek, to funkcja zwraca indykator
- * false i zwalnia wykorzystany buffor. W przeciwnym przypadku zwraca true.
- * @param[in] command : wskaźnik do wczytania
- * @return Czy udało się wczytać komendę?
- */
-bool ReadCommand(char** command);
-
-/**
- * Przetwarza komendę będącym napisem na działania na stosie wielomianów.
- * W przypadku nie istniejącej komendy, nie poprawnego parametru lub braku
- * wystarczającej liczby wielomianów na stosie wypisany będzie odpowiedni błąd.
- * @param[in] stack : stos wielomianów
- * @param[in] command : komenda
- * @param[in] lineNumber : numer linijki
- */
-void ProcessCommand(PolyStack* stack, const char* command, int lineNumber);
+void ProcessPolyInput(PolyStack* stack, int lineNumber);
 
 #endif //POLYNOMIALS_CALC_PROCESSOR_H

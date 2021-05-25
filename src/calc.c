@@ -1,5 +1,5 @@
 /** @file
-  Kalkulator wielomianów rzadkich wielu zmiennych
+  Kalkulator wielomianów rzadkich wielu zmiennych.
 
   @authors Tymofii Vedmedenko <tv433559@students.mimuw.edu.pl>
   @copyright Uniwersytet Warszawski
@@ -8,15 +8,7 @@
 
 #include <ctype.h>
 #include <stdio.h>
-#include "poly_io.h"
-#include "poly_stack.h"
 #include "calc_processor.h"
-
-#define IGNORE_LINE() { \
-    char curChar = (char) getchar(); \
-    while (curChar != EOF && curChar != '\n') \
-        curChar = (char) getchar(); \
-}
 
 char PeekCharacter() {
     char nextChar = (char) getchar();
@@ -44,6 +36,12 @@ bool LineRepresentsCommand() {
     return isalpha(peek);
 }
 
+void LineIgnore() {
+    char curChar = (char) getchar();
+    while (curChar != EOF && curChar != '\n')
+        curChar = (char) getchar();
+}
+
 int main(void) {
     PolyStack stack;
     StackInitialize(&stack);
@@ -51,25 +49,12 @@ int main(void) {
     int lineNumber = 1;
 
     while(HasNextLine()) {
-        if (LineHasNoInformation()) { // Jeżeli linijka jest pusta albo zawiera komentarz,
-            IGNORE_LINE(); // to możemy ją opuścić bez zwiększenia licznika lineNumber.
-        } else if (LineRepresentsCommand()) {
-            char* command = NULL;
-            bool successfulRead = ReadCommand(&command);
-
-            if (successfulRead)
-                ProcessCommand(&stack, command, lineNumber);
-            else
-                PrintError(WRONG_COMMAND, lineNumber);
-        } else { // Przypadek gdy linijka reprezentuje wielomian.
-            Poly newPoly;
-            bool successfulRead = ReadPoly(&newPoly);
-
-            if (successfulRead)
-                PushPoly(&stack, newPoly);
-            else
-                PrintError(WRONG_POLY, lineNumber);
-        }
+        if (LineHasNoInformation())
+            LineIgnore();
+        else if (LineRepresentsCommand())
+            ProcessCommandInput(&stack, lineNumber);
+        else // Linijka reprezentuje wielomian.
+            ProcessPolyInput(&stack, lineNumber);
 
         lineNumber++;
     }
