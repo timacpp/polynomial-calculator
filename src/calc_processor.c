@@ -127,6 +127,7 @@ static void ProcessNegCommand(PolyStack* stack, int lineNumber) {
 
     Poly top = PopPoly(stack);
     PushPoly(stack, PolyNeg(&top));
+    PolyDestroy(&top);
 }
 
 static void ProcessSubCommand(PolyStack* stack, int lineNumber) {
