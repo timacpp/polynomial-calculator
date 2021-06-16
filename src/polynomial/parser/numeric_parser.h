@@ -1,28 +1,15 @@
+#ifndef POLYNOMIALS_NUMERIC_PARSER_H
+#define POLYNOMIALS_NUMERIC_PARSER_H
+
 /** @file
-  Interfejs operacji wejściowo-wyjściowych wielomianów rzadkich wielu zmiennych
+  Interfejs funkcji parsujących liczbowe wartości.
 
   @authors Tymofii Vedmedenko <tv433559@students.mimuw.edu.pl>
   @copyright Uniwersytet Warszawski
   @date 2021
 */
 
-#ifndef POLYNOMIALS_POLY_IO_H
-#define POLYNOMIALS_POLY_IO_H
-
-#include "poly.h"
-
-/**
- * Wczytuje wielomian do przekazanego wkaźnika.
- * @param[in] p : wielomian
- * @return Czy udało się wczytać wielomian?
- */
-bool ReadPoly(Poly* p);
-
-/**
- * Wypisuje wielomian.
- * @param[in] p : wielomian
- */
-void PolyPrint(const Poly *p);
+#include "../poly.h"
 
 /**
  * Parsuje spójny podciąg napisu na wykładnik wielomianu.
@@ -46,4 +33,4 @@ poly_exp_t SubstringToExp(const char* source, size_t from, size_t to);
  */
 poly_coeff_t SubstringToCoeff(const char* source, size_t from, size_t to);
 
-#endif //POLYNOMIALS_POLY_IO_H
+#endif //POLYNOMIALS_NUMERIC_PARSER_H

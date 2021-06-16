@@ -2,7 +2,7 @@
 #undef NDEBUG
 #endif
 
-#include "poly.h"
+#include "../polynomial/poly.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdarg.h>

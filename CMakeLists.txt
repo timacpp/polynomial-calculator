@@ -21,15 +21,14 @@ set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra")
 
 # Wskazujemy pliki źródłowe.
 set(SOURCE_FILES
-    src/calc.c
-    src/poly.c
-    src/poly.h
-    src/poly_io.c
-    src/poly_io.h
-    src/poly_stack.c
-    src/poly_stack.h
-    src/calc_processor.c
-    src/calc_processor.h)
+        src/calc.c
+        src/polynomial/poly.c
+        src/polynomial/poly.h
+        src/polynomial/poly_io.c
+        src/polynomial/poly_io.h
+        src/polynomial/structures/poly_stack.c
+        src/polynomial/structures/poly_stack.h
+        src/poly_test.c src/calculator/calc_error.c src/calculator/calc_error.h src/calculator/calc_poly.c src/calculator/calc_poly.h src/calculator/calc_command.c src/calculator/calc_command.h src/polynomial/parser/numeric_parser.c src/polynomial/parser/numeric_parser.h src/polynomial/parser/poly_parser.c src/polynomial/parser/poly_parser.h)
 
 # Wskazujemy plik wykonywalny.
 add_executable(poly ${SOURCE_FILES})

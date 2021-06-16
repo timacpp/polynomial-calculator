@@ -1,55 +1,23 @@
 /** @file
-  Implementacja procesora kalkulatora wielomianów rzadkich wielu zmiennych
+  Implementacja procesora komend kalkulatora wielomianów wielu zmiennych.
 
   @authors Tymofii Vedmedenko <tv433559@students.mimuw.edu.pl>
   @copyright Uniwersytet Warszawski
   @date 2021
 */
 
-#include "calc_processor.h"
-#include "poly_io.h"
 #include <errno.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
+
+#include "calc_command.h"
+#include "calc_error.h"
+#include "../polynomial/poly_io.h"
+#include "../polynomial/parser/numeric_parser.h"
 
 #define CHECK_NULL_PTR(p) if (!p) exit(1)
-
-/** To jest typ uogólniający możliwe błędy operacyjne kalkulatora. */
-typedef enum CalcError {
-    WRONG_POLY,
-    WRONG_COMMAND,
-    WRONG_AT_VALUE,
-    STACK_UNDERFLOW,
-    WRONG_DEG_VARIABLE,
-} CalcError;
-
-/**
- * Wypisuje błąd na wyjście błędów.
- * @param[in] error : błąd
- * @param[in] line : numer linijki
- */
-void PrintError(CalcError error, int line) {
-    switch (error) {
-        case WRONG_POLY:
-            fprintf(stderr, "ERROR %d WRONG POLY\n", line);
-            break;
-        case WRONG_COMMAND:
-            fprintf(stderr, "ERROR %d WRONG COMMAND\n", line);
-            break;
-        case WRONG_AT_VALUE:
-            fprintf(stderr, "ERROR %d AT WRONG VALUE\n", line);
-            break;
-        case STACK_UNDERFLOW:
-            fprintf(stderr, "ERROR %d STACK UNDERFLOW\n", line);
-            break;
-        case WRONG_DEG_VARIABLE:
-            fprintf(stderr, "ERROR %d DEG BY WRONG VARIABLE\n", line);
-            break;
-    }
-}
 
 static void ProcessZeroCommand(PolyStack* stack) {
     PushPoly(stack, PolyZero());
@@ -312,7 +280,7 @@ static void ProcessCommand(PolyStack* stack, char* command, int lineNumber) {
  * @param[in] command : wskaźnik do wczytania komendy
  * @return Czy udało się wczytać komendę?
  */
-bool ReadCommand(char** command) {
+static bool ReadCommand(char** command) {
     size_t size = 0, capacity = 1;
     char curChar = (char) getchar();
     bool validChars = true;
@@ -352,18 +320,4 @@ void ProcessCommandInput(PolyStack* stack, int lineNumber) {
         PrintError(WRONG_COMMAND, lineNumber);
 
     free(command);
-}
-
-void ProcessPolyInput(PolyStack* stack, int lineNumber) {
-    // Funkcje wywołane w tym bloku mogą zmieniać stan errno, dlatego
-    // przed wykonaniem parsowaniem ustawiamy go na początkową wartość.
-    errno = 0;
-
-    Poly newPoly;
-    bool successfulRead = ReadPoly(&newPoly);
-
-    if (successfulRead)
-        PushPoly(stack, newPoly);
-    else
-        PrintError(WRONG_POLY, lineNumber);
 }

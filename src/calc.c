@@ -8,7 +8,8 @@
 
 #include <ctype.h>
 #include <stdio.h>
-#include "calc_processor.h"
+#include "calculator/calc_poly.h"
+#include "calculator/calc_command.h"
 
 char PeekCharacter() {
     char nextChar = (char) getchar();
@@ -47,6 +48,7 @@ int main(void) {
     StackInitialize(&stack);
 
     int lineNumber = 1;
+
 
     while(HasNextLine()) {
         if (LineHasNoInformation())
