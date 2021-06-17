@@ -30,8 +30,7 @@ static void ProcessIsCoeffCommand(PolyStack* stack, int lineNumber) {
     }
 
     Poly top = TopPoly(stack);
-    bool topIsCoeff = PolyIsCoeff(&top);
-    printf("%d\n", topIsCoeff);
+    printf("%d\n", PolyIsCoeff(&top));
 }
 
 static void ProcessIsZeroCommand(PolyStack* stack, int lineNumber) {
@@ -41,8 +40,7 @@ static void ProcessIsZeroCommand(PolyStack* stack, int lineNumber) {
     }
 
     Poly top = TopPoly(stack);
-    bool topIsZero = PolyIsZero(&top);
-    printf("%d\n",topIsZero);
+    printf("%d\n", PolyIsZero(&top));
 }
 
 static void ProcessCloneCommand(PolyStack* stack, int lineNumber) {
@@ -63,9 +61,7 @@ static void ProcessAddCommand(PolyStack* stack, int lineNumber) {
 
     Poly firstTop = PopPoly(stack);
     Poly secondTop = PopPoly(stack);
-
-    Poly topSum = PolyAdd(&firstTop, &secondTop);
-    PushPoly(stack, topSum);
+    PushPoly(stack, PolyAdd(&firstTop, &secondTop));
 
     PolyDestroy(&firstTop);
     PolyDestroy(&secondTop);
@@ -79,9 +75,7 @@ static void ProcessMulCommand(PolyStack* stack, int lineNumber) {
 
     Poly firstTop = PopPoly(stack);
     Poly secondTop = PopPoly(stack);
-
-    Poly topMul = PolyMul(&firstTop, &secondTop);
-    PushPoly(stack, topMul);
+    PushPoly(stack, PolyMul(&firstTop, &secondTop));
 
     PolyDestroy(&firstTop);
     PolyDestroy(&secondTop);
@@ -106,9 +100,7 @@ static void ProcessSubCommand(PolyStack* stack, int lineNumber) {
 
     Poly firstTop = PopPoly(stack);
     Poly secondTop = PopPoly(stack);
-
-    Poly topSub = PolySub(&firstTop, &secondTop);
-    PushPoly(stack, topSub);
+    PushPoly(stack, PolySub(&firstTop, &secondTop));
 
     PolyDestroy(&firstTop);
     PolyDestroy(&secondTop);
@@ -121,11 +113,10 @@ static void ProcessIsEqCommand(PolyStack* stack, int lineNumber) {
     }
 
     Poly firstTop = PopPoly(stack);
-    Poly secondTop = TopPoly(stack);
+    Poly secondTop = PopPoly(stack);
+    printf("%d\n", PolyIsEq(&firstTop, &secondTop));
 
-    bool topIsEq = PolyIsEq(&firstTop, &secondTop);
-    printf("%d\n", topIsEq);
-
+    PushPoly(stack, secondTop);
     PushPoly(stack, firstTop);
 }
 
@@ -136,18 +127,21 @@ static void ProcessDegCommand(PolyStack* stack, int lineNumber) {
     }
 
     Poly top = TopPoly(stack);
-    poly_exp_t topDeg = PolyDeg(&top);
-    printf("%d\n", topDeg);
+    printf("%d\n", PolyDeg(&top));
 }
 
-static bool IsValidArgument(const char* source, size_t from, size_t to) {
-    // Konieczny warunek poprawnego argumentu:
-    // spacja przed nim, niezerowa długość, nie składa się tylko z minusu.
-    if (source[from - 1] != ' ' || to - from == 0 || (source[from] == '-' && to - from == 1))
+static bool CommandValidArgument(const char* source, size_t from) {
+    size_t to = strlen(source);
+
+    // Konieczny warunek poprawnego argumentu: parsowanie się udało,
+    // spacja wcześniej, niezerowa długość, nie jest minusem.
+    bool illegalCornerValues = source[from - 1] != ' ' || to - from == 0
+                               || (source[from] == '-' && to - from == 1);
+
+    if (errno || illegalCornerValues)
         return false;
 
-    // Dostateczny warunek poprawnego argumentu:
-    // składa się tylko z cyfr lub początkowego minusu.
+    // Dostateczny warunek poprawnego argumentu: składa się tylko z cyfr lub początkowego minusu.
     for (size_t i = from; i < to; i++) {
         bool isValidChar = (i == from && source[i] == '-') || isdigit(source[i]);
         if (!isValidChar)
@@ -157,20 +151,19 @@ static bool IsValidArgument(const char* source, size_t from, size_t to) {
     return true;
 }
 
+static bool CommandValidDelimeter(const char* command, size_t nameLength) {
+    return nameLength == strlen(command) || isblank(command[nameLength]);
+}
+
 static void ProcessDegByCommand(PolyStack* stack, char* command, int lineNumber) {
-    poly_exp_t degByIdx;
     const size_t nameLength = 6; // strlen("DEG_BY");
     const size_t commandLength = strlen(command);
-    bool correctDelimeter = (nameLength == commandLength || isblank(command[nameLength]));
-    bool correctArgument = correctDelimeter && IsValidArgument(command, nameLength + 1, commandLength);
+    size_t degByIdx = SubstringToDegByIdx(command, nameLength + 1, commandLength);
 
-    if (correctArgument && correctDelimeter)
-        degByIdx = SubstringToExp(command, nameLength + 1, commandLength);
-
-    if (!correctDelimeter) {
+    if (!CommandValidDelimeter(command, nameLength)) {
         PrintError(WRONG_COMMAND, lineNumber);
         return;
-    } else if (!correctArgument || errno) {
+    } else if (!CommandValidArgument(command, nameLength + 1)) {
         PrintError(WRONG_DEG_VARIABLE, lineNumber);
         return;
     } else if (stack->size < 1) {
@@ -179,24 +172,19 @@ static void ProcessDegByCommand(PolyStack* stack, char* command, int lineNumber)
     }
 
     Poly top = TopPoly(stack);
-    poly_exp_t topDegBy = PolyDegBy(&top, (poly_exp_t) degByIdx);
+    poly_exp_t topDegBy = PolyDegBy(&top, degByIdx);
     printf("%d\n", topDegBy);
 }
 
 static void ProcessAtCommand(PolyStack* stack, char* command, int lineNumber) {
-    poly_coeff_t valueForAt;
     const size_t nameLength = 2; // strlen("AT");
     const size_t commandLength = strlen(command);
-    bool correctDelimeter = (nameLength == commandLength || isblank(command[nameLength]));
-    bool correctArgument = correctDelimeter && IsValidArgument(command, nameLength + 1, commandLength);
+    poly_coeff_t valueForAt = SubstringToCoeff(command, nameLength + 1, commandLength);
 
-    if (correctArgument)
-        valueForAt = SubstringToCoeff(command, nameLength + 1, commandLength);
-
-    if (!correctDelimeter) {
+    if (!CommandValidDelimeter(command, nameLength)) {
         PrintError(WRONG_COMMAND, lineNumber);
         return;
-    } else if (!correctArgument|| errno) {
+    } else if (!CommandValidArgument(command, nameLength + 1)) {
         PrintError(WRONG_AT_VALUE, lineNumber);
         return;
     } else if (stack->size < 1) {
@@ -205,7 +193,7 @@ static void ProcessAtCommand(PolyStack* stack, char* command, int lineNumber) {
     }
 
     Poly top = PopPoly(stack);
-    Poly topAt = PolyAt(&top, (poly_exp_t) valueForAt);
+    Poly topAt = PolyAt(&top, valueForAt);
 
     PushPoly(stack, topAt);
     PolyDestroy(&top);
@@ -260,9 +248,9 @@ static void ProcessCommand(PolyStack* stack, char* command, int lineNumber) {
         ProcessIsEqCommand(stack, lineNumber);
     else if (strcmp(command, "DEG") == 0)
         ProcessDegCommand(stack, lineNumber);
-    else if (strncmp(command, "DEG_BY", 6) == 0) // strlen("DEG_BY") == 6
+    else if (strncmp(command, "DEG_BY", 6) == 0) // 6 == strlen("DEG_BY")
         ProcessDegByCommand(stack, command, lineNumber);
-    else if (strncmp(command, "AT", 2) == 0) // strlen("AT") == 2
+    else if (strncmp(command, "AT", 2) == 0) // 2 == strlen("AT")
         ProcessAtCommand(stack, command, lineNumber);
     else if (strcmp(command, "PRINT") == 0)
         ProcessPrintCommand(stack, lineNumber);

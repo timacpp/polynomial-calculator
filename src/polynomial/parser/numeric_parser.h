@@ -12,6 +12,17 @@
 #include "../poly.h"
 
 /**
+ * Parsuje spójny podciąg napisu na wartość argumentu funkcji PolyDegBy.
+ * W przypadku gdy podciąg odpowiada liczbie poza zakresu
+ * typu size_t, to ustawia odpowiedni errno i zwraca 0.
+ * @param[in] source : napis
+ * @param[in] from : początek podciągu (włączając)
+ * @param[in] to : koniec podciągu (nie włączająć)
+ * @return Sparsowany stopień.
+ */
+size_t SubstringToDegByIdx(const char* source, size_t from, size_t to);
+
+/**
  * Parsuje spójny podciąg napisu na wykładnik wielomianu.
  * W przypadku gdy podciąg odpowiada liczbie poza zakresu
  * typu poly_exp_t, to ustawia odpowiedni errno i zwraca 0.

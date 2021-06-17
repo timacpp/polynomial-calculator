@@ -15,40 +15,58 @@
 
 #define CHECK_NULL_PTR(p) if (!p) exit(1)
 
-poly_exp_t SubstringToExp(const char* source, size_t from, size_t to) {
+static char* ExtractSubstring(const char* source, size_t from, size_t to) {
+    const size_t numberLength = to - from;
+
+    char* numberString = malloc((numberLength + 1) * sizeof(char));
+    CHECK_NULL_PTR(numberString);
+
+    memcpy(numberString, &source[from], numberLength * sizeof(char));
+    numberString[numberLength] = '\0';
+
+    return numberString;
+}
+
+static size_t StringToULL(const char* numberString, size_t max) {
     const int base = 10;
-    size_t expLength = to - from;
+    size_t parsedNumber = strtoull(numberString, NULL, base);
 
-    char* expString = malloc((expLength + 1) * sizeof(char));
-    CHECK_NULL_PTR(expString);
+    if (numberString[0] == '-' || parsedNumber > max)
+        errno = EINVAL;
 
-    // Kopiujemy zawartość pamięci reprezentującą wykładnik.
-    memcpy(expString, &source[from], expLength * sizeof(char));
-    expString[expLength] = '\0';
+    return parsedNumber;
+}
 
-    size_t parsedExp = strtoul(expString, NULL, base);
-    free(expString);
+static long StringToLong(char* numberString) {
+    const int base = 10;
+    long parsedNumber = strtol(numberString, NULL, base);
 
-    // Samodzielnie ustawiamy errno na ERRANGE jak wykładnik jest poza górnym zakresem.
-    if (parsedExp > INT_MAX)
-        errno = ERANGE;
+    return parsedNumber;
+}
 
-    return (errno ? 0 : (poly_exp_t) parsedExp);
+size_t SubstringToDegByIdx(const char* source, size_t from, size_t to) {
+    char* stringVariable = ExtractSubstring(source, from, to);
+    size_t parsedVariable = StringToULL(stringVariable, ULLONG_MAX);
+
+    free(stringVariable);
+
+    return parsedVariable;
+}
+
+poly_exp_t SubstringToExp(const char* source, size_t from, size_t to) {
+    char* stringExp = ExtractSubstring(source, from, to);
+    poly_exp_t parsedExp = (poly_exp_t) StringToULL(stringExp, INT_MAX);
+
+    free(stringExp);
+
+    return parsedExp;
 }
 
 poly_coeff_t SubstringToCoeff(const char* source, size_t from, size_t to) {
-    const int base = 10;
-    const size_t coeffLength = to - from;
+    char* stringCoeff = ExtractSubstring(source, from, to);
+    poly_coeff_t parsedCoeff = StringToLong(stringCoeff);
 
-    // Kopiujemy zawartość pamięci reprezentującą wpółczynnik.
-    char* coeffString = malloc((coeffLength + 1) * sizeof(char));
-    CHECK_NULL_PTR(coeffString);
+    free(stringCoeff);
 
-    memcpy(coeffString, &source[from], coeffLength);
-    coeffString[coeffLength] = '\0';
-
-    poly_coeff_t parsedCoeff = strtol(coeffString, NULL, base);
-    free(coeffString);
-
-    return (errno ? 0 : parsedCoeff);
+    return parsedCoeff;
 }

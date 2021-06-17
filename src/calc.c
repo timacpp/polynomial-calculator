@@ -8,6 +8,7 @@
 
 #include <ctype.h>
 #include <stdio.h>
+
 #include "calculator/calc_poly.h"
 #include "calculator/calc_command.h"
 
@@ -48,7 +49,6 @@ int main(void) {
     StackInitialize(&stack);
 
     int lineNumber = 1;
-
 
     while(HasNextLine()) {
         if (LineHasNoInformation())
