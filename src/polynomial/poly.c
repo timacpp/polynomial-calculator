@@ -104,8 +104,9 @@ Poly PolyClone(const Poly *p) {
  * się składa tylko z jednego jednomianu postaci @f$c * x^0@f$
  * @param[in] p : wielomian
  * @param[in] newSize : nowy rozmiar
+ * @return Zredukowany wielomian
  */
-static void PolyReduce(Poly *p, size_t newSize) {
+static Poly PolyReduce(Poly *p, size_t newSize) {
     assert(!PolyIsCoeff(p) && newSize <= p->size);
 
     // Zmiejszenie rozmiaru wielomianu
@@ -118,14 +119,14 @@ static void PolyReduce(Poly *p, size_t newSize) {
     // Wielomian, który ma niezerowy rozmiar oraz nie składa się z jednego
     // jednomianu postaci c * x^0 nie da się zredukować do wielomianu stalego.
     if (newSize != 0 && !freeTermOnly)
-        return;
+        return *p;
 
     // Redukujemy wielomian do zerowego, gdy jego rozmiar jest zerowy,
     // a w p.p. do współczynnika 'c' we wzorze na wielomian c * x^0.
     poly_coeff_t newCoeff = (p->size > 0 ? MonoGetPoly(&p->arr[0])->coeff : 0);
-
     PolyDestroy(p);
-    *p = PolyFromCoeff(newCoeff);
+
+    return PolyFromCoeff(newCoeff);
 }
 
 
@@ -176,9 +177,7 @@ static Poly PolyAddNoConst(const Poly *p, const Poly *q) {
     while (qMonoID < q->size)
         resPoly.arr[resMonoID++] = MonoClone(&q->arr[qMonoID++]);
 
-    PolyReduce(&resPoly, resMonoID);
-
-    return resPoly;
+    return PolyReduce(&resPoly, resMonoID);
 }
 
 /**
@@ -206,9 +205,7 @@ static Poly PolyAddOneConst(const Poly* p, const Poly* q) {
     while (qMonoID < q->size)
         resPoly.arr[resMonoID++] = MonoClone(&q->arr[qMonoID++]);
 
-    PolyReduce(&resPoly, resMonoID);
-
-    return resPoly;
+    return PolyReduce(&resPoly, resMonoID);
 }
 
 /**
@@ -265,39 +262,48 @@ static inline int MonoComparator(const void* m1, const void* m2) {
      return (MonoGetExp(m1) - MonoGetExp(m2));
 }
 
-Poly PolyAddMonos(size_t count, const Mono monos[]) {
+Poly PolyOwnMonos(size_t count, Mono *monos) {
     if (count == 0)
         return PolyZero();
 
     size_t resMonoID = 0;
     Poly resPoly = PolyAllocate(count);
-
-    // Kopiujemy tablice jednomianów, aby je posortować.
-    Mono* monosCopy = malloc(count * sizeof(Mono));
-    memcpy(monosCopy, monos, count * sizeof(Mono));
-
-    qsort(monosCopy, count, sizeof(Mono), MonoComparator);
+    qsort(monos, count, sizeof(Mono), MonoComparator);
 
     for (size_t curMonoID = 0; curMonoID < count; curMonoID++) {
-        poly_exp_t curExp = MonoGetExp(&monosCopy[curMonoID]);
-        Mono midResult = monosCopy[curMonoID];
+        poly_exp_t curExp = MonoGetExp(&monos[curMonoID]);
+        Mono midResult = monos[curMonoID];
 
         // Sumujemy wszystkie jednomiany o tej samej potędze.
         for (; curMonoID + 1 < count; curMonoID++) {
-            if (MonoGetExp(&monosCopy[curMonoID + 1]) != curExp)
+            if (MonoGetExp(&monos[curMonoID + 1]) != curExp)
                 break;
-            MonoAddTo(&midResult, &monosCopy[curMonoID + 1]);
-            MonoDestroy(&monosCopy[curMonoID + 1]);
+            MonoAddTo(&midResult, &monos[curMonoID + 1]);
+            MonoDestroy(&monos[curMonoID + 1]);
         }
 
-       if (!MonoIsZero(&midResult)) // Jeżeli wynik sumowania nie jest zerem,
-           resPoly.arr[resMonoID++] = midResult; // to dodajemy go do końca resPoly.
+        if (!MonoIsZero(&midResult)) // Jeżeli wynik sumowania nie jest zerem,
+            resPoly.arr[resMonoID++] = midResult; // to dodajemy go do końca resPoly.
     }
 
-    PolyReduce(&resPoly, resMonoID);
-    free(monosCopy);
+    free(monos);
+    return PolyReduce(&resPoly, resMonoID);
+}
 
-    return resPoly;
+Poly PolyAddMonos(size_t count, const Mono monos[]) {
+    Mono* monosCopy = malloc(count * sizeof(Mono));
+    memcpy(monosCopy, monos, count * sizeof(Mono));
+
+    return PolyOwnMonos(count, monosCopy);
+}
+
+Poly PolyCloneMonos(size_t count, const Mono monos[]) {
+    Mono* monosCopy = malloc(count * sizeof(Mono));
+
+    for (size_t curMonoID = 0; curMonoID < count; curMonoID++)
+        monosCopy[curMonoID] = MonoClone(&monos[curMonoID]);
+
+    return PolyOwnMonos(count, monosCopy);
 }
 
 /**
@@ -368,9 +374,7 @@ static Poly PolyMulOneConst(const Poly *p, const Poly *q) {
             resPoly.arr[resMonoID++] = midResult; // to dodajemy do końca resPoly.
     }
 
-    PolyReduce(&resPoly, resMonoID);
-
-    return resPoly;
+    return PolyReduce(&resPoly, resMonoID);
 }
 
 /**
