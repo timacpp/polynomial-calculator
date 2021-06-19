@@ -16,7 +16,10 @@
 #define CHECK_NULL_PTR(p) if (!p) exit(1)
 
 static char* ExtractSubstring(const char* source, size_t from, size_t to) {
-    const size_t numberLength = to - from;
+    const int numberLength = to - from;
+
+    if (numberLength < 0)
+        return NULL;
 
     char* numberString = malloc((numberLength + 1) * sizeof(char));
     CHECK_NULL_PTR(numberString);
@@ -28,16 +31,26 @@ static char* ExtractSubstring(const char* source, size_t from, size_t to) {
 }
 
 static size_t StringToULL(const char* numberString, size_t max) {
+    if (!numberString) {
+        errno = EINVAL;
+        return 0;
+    }
+
     const int base = 10;
     size_t parsedNumber = strtoull(numberString, NULL, base);
 
     if (numberString[0] == '-' || parsedNumber > max)
-        errno = EINVAL;
+        errno = ERANGE;
 
     return parsedNumber;
 }
 
 static long StringToLong(char* numberString) {
+    if (!numberString) {
+        errno = EINVAL;
+        return 0;
+    }
+
     const int base = 10;
     long parsedNumber = strtol(numberString, NULL, base);
 
@@ -48,7 +61,8 @@ size_t SubstringToParameter(const char* source, size_t from, size_t to) {
     char* stringVariable = ExtractSubstring(source, from, to);
     size_t parsedVariable = StringToULL(stringVariable, ULLONG_MAX);
 
-    free(stringVariable);
+    if (stringVariable)
+        free(stringVariable);
 
     return parsedVariable;
 }
@@ -57,7 +71,8 @@ poly_exp_t SubstringToExp(const char* source, size_t from, size_t to) {
     char* stringExp = ExtractSubstring(source, from, to);
     poly_exp_t parsedExp = (poly_exp_t) StringToULL(stringExp, INT_MAX);
 
-    free(stringExp);
+    if (stringExp)
+        free(stringExp);
 
     return parsedExp;
 }
@@ -66,7 +81,8 @@ poly_coeff_t SubstringToCoeff(const char* source, size_t from, size_t to) {
     char* stringCoeff = ExtractSubstring(source, from, to);
     poly_coeff_t parsedCoeff = StringToLong(stringCoeff);
 
-    free(stringCoeff);
+    if (stringCoeff)
+        free(stringCoeff);
 
     return parsedCoeff;
 }

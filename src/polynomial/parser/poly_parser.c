@@ -119,7 +119,7 @@ static bool SubstringIsNumber(const char* source, size_t from, size_t to) {
 Poly SubstringToPoly(const char* source, size_t from, size_t to) {
     assert(from <= to);
 
-    // W przypadku gdy wcześniej parsowanie wykryło liczbę poza zakresem
+    // W przypadku gdy wcześniej parsowanie wykryło liczbę poza zakresem,
     // kończymy rekurencję drogą zwracania zerowego wielomianu.
     if (errno)
         return PolyZero();

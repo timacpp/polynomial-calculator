@@ -136,7 +136,7 @@ static bool CommandValidArgument(const char* source, size_t from) {
     // Konieczny warunek poprawnego argumentu: parsowanie się udało,
     // spacja wcześniej, niezerowa długość, nie jest minusem.
     bool illegalCornerValues = source[from - 1] != ' ' || to - from == 0
-                               || (source[from] == '-' && to - from == 1);
+                               || (to - from == 1 && source[from] == '-');
 
     if (errno || illegalCornerValues)
         return false;
