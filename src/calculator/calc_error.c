@@ -32,5 +32,8 @@ void PrintError(CalcError error, int line) {
         case WRONG_DEG_VARIABLE:
             fprintf(stderr, "ERROR %d DEG BY WRONG VARIABLE\n", line);
             break;
+        case WRONG_COMPOSE_PARAMETER:
+            fprintf(stderr, "ERROR %d COMPOSE WRONG PARAMETER\n", line);
+            break;
     }
 }

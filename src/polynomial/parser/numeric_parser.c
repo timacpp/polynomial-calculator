@@ -44,7 +44,7 @@ static long StringToLong(char* numberString) {
     return parsedNumber;
 }
 
-size_t SubstringToDegByIdx(const char* source, size_t from, size_t to) {
+size_t SubstringToParameter(const char* source, size_t from, size_t to) {
     char* stringVariable = ExtractSubstring(source, from, to);
     size_t parsedVariable = StringToULL(stringVariable, ULLONG_MAX);
 

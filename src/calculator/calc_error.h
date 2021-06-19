@@ -16,8 +16,8 @@ typedef enum CalcError {
     WRONG_AT_VALUE,
     STACK_UNDERFLOW,
     WRONG_DEG_VARIABLE,
+    WRONG_COMPOSE_PARAMETER
 } CalcError;
-
 
 void PrintError(CalcError error, int line);
 

@@ -158,7 +158,7 @@ static bool CommandValidDelimeter(const char* command, size_t nameLength) {
 static void ProcessDegByCommand(PolyStack* stack, char* command, int lineNumber) {
     const size_t nameLength = 6; // strlen("DEG_BY");
     const size_t commandLength = strlen(command);
-    size_t degByIdx = SubstringToDegByIdx(command, nameLength + 1, commandLength);
+    size_t degByIdx = SubstringToParameter(command, nameLength + 1, commandLength);
 
     if (!CommandValidDelimeter(command, nameLength)) {
         PrintError(WRONG_COMMAND, lineNumber);
@@ -220,6 +220,33 @@ static void ProcessPopCommand(PolyStack* stack, int lineNumber) {
     PolyDestroy(&top);
 }
 
+static void ProcessComposeCommand(PolyStack* stack, char* command, int lineNumber) {
+    const size_t nameLength = 7; // strlen("COMPOSE");
+    const size_t commandLength = strlen(command);
+    size_t composeDepth = SubstringToParameter(command, nameLength + 1, commandLength);
+
+    if (!CommandValidDelimeter(command, nameLength)) {
+        PrintError(WRONG_COMMAND, lineNumber);
+        return;
+    } else if (!CommandValidArgument(command, nameLength + 1)) {
+        PrintError(WRONG_COMPOSE_PARAMETER, lineNumber);
+        return;
+    } else if (stack->size - 1 < composeDepth) {
+        PrintError(STACK_UNDERFLOW, lineNumber);
+        return;
+    }
+
+    Poly topPoly = PopPoly(stack), toCompose[composeDepth];
+    for (size_t i = 0; i < composeDepth; i++)
+        toCompose[composeDepth - i - 1] = PopPoly(stack);
+
+    PushPoly(stack, PolyCompose(&topPoly, composeDepth, toCompose));
+
+    PolyDestroy(&topPoly);
+    for (size_t i = 0; i < composeDepth; i++)
+        PolyDestroy(&toCompose[i]);
+}
+
 /**
  * Przetwarza komendę będącym napisem na działania na stosie wielomianów.
  * W przypadku nie istniejącej komendy wypisa błąd o niepoprawnej komendzie.
@@ -256,6 +283,8 @@ static void ProcessCommand(PolyStack* stack, char* command, int lineNumber) {
         ProcessPrintCommand(stack, lineNumber);
     else if (strcmp(command, "POP") == 0)
         ProcessPopCommand(stack, lineNumber);
+    else if (strncmp(command, "COMPOSE", 7) == 0) // 7 == strlen("COMPOSE")
+        ProcessComposeCommand(stack, command, lineNumber);
     else
         PrintError(WRONG_COMMAND, lineNumber);
 }

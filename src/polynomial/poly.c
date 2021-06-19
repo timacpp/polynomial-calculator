@@ -551,10 +551,8 @@ static Poly PolyToPower(const Poly *p, poly_exp_t exp) {
 static Poly PolyComposeFrom(const Poly *p, size_t idx, size_t k, const Poly q[]);
 
 static Poly MonoComposeFrom(const Mono *m, size_t idx, size_t k, const Poly q[]) {
-    if (idx > k)
+    if (idx >= k)
         return PolyZero();
-    else if (MonoHasConstPoly(m) && MonoGetExp(m) == 0)
-        return PolyClone(MonoGetPoly(m));
 
     Poly multinomial = PolyToPower(&q[idx], MonoGetExp(m));
     Poly composition = PolyComposeFrom(MonoGetPoly(m), idx + 1, k, q);
@@ -569,14 +567,14 @@ static Poly MonoComposeFrom(const Mono *m, size_t idx, size_t k, const Poly q[])
 static Poly PolyComposeFrom(const Poly *p, size_t idx, size_t k, const Poly q[]) {
     if (PolyIsCoeff(p))
         return PolyClone(p);
-    else if (idx > k) // check if it helps
-        return PolyZero();
 
     Poly resPoly = PolyZero();
 
     for (size_t curMonoID = 0; curMonoID < p->size; curMonoID++) {
         Poly composition = MonoComposeFrom(&p->arr[curMonoID], idx, k, q);
         PolyAddTo(&resPoly, &composition);
+
+        PolyDestroy(&composition);
     }
 
     return resPoly;

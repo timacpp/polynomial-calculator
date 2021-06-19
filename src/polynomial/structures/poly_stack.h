@@ -55,5 +55,4 @@ Poly PopPoly(PolyStack* stack);
  */
 void StackDestroy(PolyStack* stack);
 
-
 #endif //POLYNOMIALS_POLY_STACK_H
