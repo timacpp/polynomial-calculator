@@ -239,6 +239,19 @@ static void PolyAddTo(Poly *p, const Poly *q) {
     *p = midResult;
 }
 
+
+/**
+ * Mnoży przez wielomian @f$q@f$ wielomian @f$p@f$
+ * Wielomian @f$p@f$ jest przyjmowany na własność.
+ * @param[in] p : wielomian do aktualizacji @f$p@f$
+ * @param[in] q : wielomian do dodawania @f$q@f$
+ */
+static void PolyMulBy(Poly *p, const Poly *q) {
+    Poly midResult = PolyMul(p, q);
+    PolyDestroy(p);
+    *p = midResult;
+}
+
 /**
  * Dodaje jednomian @f$m_2@f$ do jednomiana @f$m_1@f$
  * Jednomian @f$m_1@f$ jest przyjmowany na własność.
@@ -263,7 +276,7 @@ static inline int MonoComparator(const void* m1, const void* m2) {
 }
 
 Poly PolyOwnMonos(size_t count, Mono *monos) {
-    if (count == 0)
+    if (count == 0 || monos == NULL)
         return PolyZero();
 
     size_t resMonoID = 0;
@@ -415,12 +428,12 @@ Poly PolySub(const Poly *p, const Poly *q) {
  * @param[in] exp : wykładnik @f$n@f$
  * @return @f$x^n@f$
  */
-static poly_coeff_t ToPower(poly_coeff_t base, poly_exp_t exp) {
+static poly_coeff_t NumberToPower(poly_coeff_t base, poly_exp_t exp) {
     if (exp == 0)
         return 1;
 
-    poly_coeff_t sqrtResult = ToPower(base, exp / 2);
-    return sqrtResult * sqrtResult * (exp & 1 ? base : 1);
+    poly_coeff_t sqrtResult = NumberToPower(base, exp / 2);
+    return sqrtResult * sqrtResult * (exp % 2 == 1 ? base : 1);
 }
 
 Poly PolyAt(const Poly *p, poly_coeff_t x) {
@@ -432,7 +445,7 @@ Poly PolyAt(const Poly *p, poly_coeff_t x) {
     for (size_t pMonoID = 0; pMonoID < p->size; pMonoID++) {
         // Obliczenie wyrazu x^n, gdzie n - potęga obecnego jednomianu z 'p'
         poly_exp_t curExp = MonoGetExp(&p->arr[pMonoID]);
-        poly_coeff_t newCoeff = ToPower(x, curExp);
+        poly_coeff_t newCoeff = NumberToPower(x, curExp);
 
         // Obiczenie wartości jednomiana w punkcie 'x'
         Poly coeffPoly = PolyFromCoeff(newCoeff);
@@ -516,4 +529,59 @@ bool PolyIsEq(const Poly *p, const Poly *q) {
     }
 
     return true;
+}
+
+static Poly PolyToPower(const Poly *p, poly_exp_t exp) {
+    if (exp == 0)
+        return PolyFromCoeff(1);
+    else if (PolyIsCoeff(p))
+        return PolyFromCoeff(NumberToPower(p->coeff, exp));
+
+    Poly sqrtResult = PolyToPower(p, exp / 2);
+    Poly resPoly = PolyMul(&sqrtResult, &sqrtResult);
+
+    if (exp % 2 == 1)
+        PolyMulBy(&resPoly, p);
+
+    PolyDestroy(&sqrtResult);
+
+    return resPoly;
+}
+
+static Poly PolyComposeFrom(const Poly *p, size_t idx, size_t k, const Poly q[]);
+
+static Poly MonoComposeFrom(const Mono *m, size_t idx, size_t k, const Poly q[]) {
+    if (idx > k)
+        return PolyZero();
+    else if (MonoHasConstPoly(m) && MonoGetExp(m) == 0)
+        return PolyClone(MonoGetPoly(m));
+
+    Poly multinomial = PolyToPower(&q[idx], MonoGetExp(m));
+    Poly composition = PolyComposeFrom(MonoGetPoly(m), idx + 1, k, q);
+    Poly resPoly = PolyMul(&multinomial, &composition);
+
+    PolyDestroy(&multinomial);
+    PolyDestroy(&composition);
+
+    return resPoly;
+}
+
+static Poly PolyComposeFrom(const Poly *p, size_t idx, size_t k, const Poly q[]) {
+    if (PolyIsCoeff(p))
+        return PolyClone(p);
+    else if (idx > k) // check if it helps
+        return PolyZero();
+
+    Poly resPoly = PolyZero();
+
+    for (size_t curMonoID = 0; curMonoID < p->size; curMonoID++) {
+        Poly composition = MonoComposeFrom(&p->arr[curMonoID], idx, k, q);
+        PolyAddTo(&resPoly, &composition);
+    }
+
+    return resPoly;
+}
+
+Poly PolyCompose(const Poly *p, size_t k, const Poly q[]) {
+   return PolyComposeFrom(p, 0, k, q);
 }
