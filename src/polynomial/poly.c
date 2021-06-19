@@ -531,6 +531,12 @@ bool PolyIsEq(const Poly *p, const Poly *q) {
     return true;
 }
 
+/**
+ * Podnosi wielomian @p p do potęgi @p exp.
+ * @param[in] p : wielomian @f$p@f$
+ * @param[in] exp: wielomian
+ * @return @f$p^exp@f$
+ */
 static Poly PolyToPower(const Poly *p, poly_exp_t exp) {
     if (exp == 0)
         return PolyFromCoeff(1);
@@ -564,6 +570,15 @@ static Poly MonoComposeFrom(const Mono *m, size_t idx, size_t k, const Poly q[])
     return resPoly;
 }
 
+/**
+ * Składa wielomian @p p z @p k wielomianami tablicy @p q
+ * rozpoczynając od wielomianu z tablicy @p p o indeksie @p idx.
+ * @param[in] p : wielomian @f$p@f$
+ * @param[in] q : tablica wielomianów
+ * @param[in] k : liczba wielomianów
+ * @param[in] idx : indeks początku
+ * @return @f$p(p_0, p_1, \ldots, q_{idx}, q_{idx + 1}, \ldots)@f$
+ */
 static Poly PolyComposeFrom(const Poly *p, size_t idx, size_t k, const Poly q[]) {
     if (PolyIsCoeff(p))
         return PolyClone(p);
@@ -571,6 +586,7 @@ static Poly PolyComposeFrom(const Poly *p, size_t idx, size_t k, const Poly q[])
     Poly resPoly = PolyZero();
 
     for (size_t curMonoID = 0; curMonoID < p->size; curMonoID++) {
+        // Dodajemy do wyniku złożenie jednomianu z wielomianami tablicy q.
         Poly composition = MonoComposeFrom(&p->arr[curMonoID], idx, k, q);
         PolyAddTo(&resPoly, &composition);
 

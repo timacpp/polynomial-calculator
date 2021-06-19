@@ -6,6 +6,7 @@
   @date 2021
 */
 
+#include <errno.h>
 #include <ctype.h>
 #include <stdlib.h>
 
@@ -117,6 +118,11 @@ static bool SubstringIsNumber(const char* source, size_t from, size_t to) {
  */
 Poly SubstringToPoly(const char* source, size_t from, size_t to) {
     assert(from <= to);
+
+    // W przypadku gdy wcześniej parsowanie wykryło liczbę poza zakresem
+    // kończymy rekurencję drogą zwracania zerowego wielomianu.
+    if (errno)
+        return PolyZero();
 
     // Jeżeli pierwszy i ostatni symbol na zakresie [from, to) są cyframi
     // z możliwością wiodącego znaku minus, to source reprezentuje stały
