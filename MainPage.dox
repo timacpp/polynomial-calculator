@@ -9,7 +9,45 @@ Uwaga: aktualna treść zadania znajduje się w [Moodle](https://moodle.mimuw.ed
 
 Tegoroczne duże zadanie polega na zaimplementowaniu ONP kalkulatora wielu zmiennych.
 
-Kalulator potrafi wczytywac wielomiany, a zatem wykonywać mnożenie, dodawanie, obliczenie stopniu, wyliczania wartości w punkcie itp.
 
+
+Wielomiany wielu zmiennych są jednej z trzech postaci:
+
+(a) współczynnik - wielomian stały
+
+(b) (współczynnik, wykładnik) - jednomian
+
+(c) (współczynnik1, wykładnik1)+(współczynnik2, wykładnik2) - suma jednomianów
+
+
+Wpisując wielomian o odpowiednich poprawnych zakresach wartości on zostaje ustawiony na wierzchołek stosu.
+
+
+
+Aby wykonać operacji nad wielomianami ze stosu trzeba wpisać odpowiednie polecenie:
+
+(a) ADD/SUB/MUL - dodaje/odejmuje/mnoży dwa wielomiany ze stosu
+
+(b) IS_ZERO/IS_COEFF/IS_EQ - sprawdza czy wielomian na wierzchołku stosu jest zerowy/stały/równy wielomianowi wyżej ze stosu
+
+(c) NEG/DEG - neguje/oblicza stopień wielomianu
+
+(c) COMPOSE k/DEG_BY var/AT x - składa k wielomianów/oblicza stopień wzgłędem zmiennej o indeksie var/oblicza wartość wielomianu w punkcie x
+
+
+
+Są również pomocnicze polecenia, między innymi:
+
+
+(a) POP - usuwa wielomian z wierzchołku stosu
+
+(b) PRINT - wypisuje wielomian z wierzchołku stosu
+
+(c) ZERO - ustawia wielomian zerowy na wierzchołek stosu
+
+(d) CLONE - ustawia kopię wielomianu z wierzchołku na wierzchołek
+
+
+W przypadku nieistniejącego polecenia, niepoprawnej wartości liczbowej lub złego zapisu wielomianu program wypisuje odpowiedni błąd.
 
 */

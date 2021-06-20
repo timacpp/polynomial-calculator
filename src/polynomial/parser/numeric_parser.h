@@ -18,7 +18,7 @@
  * @param[in] source : napis
  * @param[in] from : początek podciągu (włączając)
  * @param[in] to : koniec podciągu (nie włączająć)
- * @return Sparsowany stopień.
+ * @return Sparsowany parametr.
  */
 size_t SubstringToParameter(const char* source, size_t from, size_t to);
 
