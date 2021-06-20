@@ -3978,9 +3978,9 @@ static bool ComposeTest(void) {
 
     size_t size = sizeof(q) / sizeof(q[0]);
 
-    Poly p = P(P(P(P(C(1), 6), 5), 2), P(P(C(1), 0, C(1), 2), 3), C(5), 7);
+    Poly p = P(P(P(C(1), 6), 5), 2, P(C(1), 0, C(1), 2), 3, C(5), 7);
     Poly received = PolyCompose(&p, size, q);
-    Poly expected = P(C(1), 12, P(P(C(1), 0, C(2), 1, C(1), 2), 4), C(5), 28);
+    Poly expected = P(C(1), 12, P(C(1), 0, C(2), 1, C(1), 2), 14, C(5), 28);
 
     bool res = PolyIsEq(&expected, &received);
 
@@ -4005,37 +4005,50 @@ static bool PolyOwnTest(void) {
     monos[0] = M(P(C(-1), 1), 1);
     monos[1] = M(P(C(1), 1), 2);
 
-    Mono* m1 = monos + 0;
-    Mono* m2 = monos + 1;
+    Poly *p1 = &(monos + 0)->p;
+    Poly *p2 = &(monos + 1)->p;
 
-    Poly p = PolyOwnMonos(2, monos);
-    PolyDestroy(&p);
+    Poly received = PolyOwnMonos(2, monos);
+    Poly expected = P(P(C(-1), 1), 1, P(C(1), 1), 2);
 
-    // remember adress
-    return (monos == NULL && monos[0].p.arr == NULL && monos[1].p.arr == NULL);
+    bool res = PolyIsEq(&received, &expected);
+
+    PolyDestroy(&received);
+    PolyDestroy(&expected);
+
+    res &= (monos && p1 && p2);
+
+    return res;
 }
 
 /**
- * Sprawdza poprawność działania funkcji PolyCompose.
+ * Sprawdza poprawność działania funkcji PolyClone oraz
+ * zgodności nie przekazywania tablicy i jej zawartości na właśność.
  */
 static bool PolyCloneTest(void) {
     Mono* monos = malloc(2 * sizeof(Mono));
-
     assert(monos);
 
     monos[0] = M(P(C(-1), 1), 1);
     monos[1] = M(P(C(1), 1), 2);
 
-    Poly p = PolyCloneMonos(2, monos);
-    PolyDestroy(&p);
+    Poly *p1 = &(monos + 0)->p;
+    Poly *p2 = &(monos + 1)->p;
 
-    bool res = monos != NULL && monos[0].p.arr != NULL && monos[1].p.arr != NULL;
+    Poly received = PolyCloneMonos(2, monos);
+    Poly expected = P(P(C(-1), 1), 1, P(C(1), 1), 2);
 
-    if (res) {
-        MonoDestroy(monos + 0);
-        MonoDestroy(monos + 1);
-        free(monos);
-    }
+    bool res = PolyIsEq(&received, &expected);
+
+    PolyDestroy(&received);
+    PolyDestroy(&expected);
+
+    if (!monos || !p1 || !p2)
+        return false;
+
+    PolyDestroy(p1);
+    PolyDestroy(p2);
+    free(monos);
 
     return res;
 }
@@ -4128,10 +4141,9 @@ int main(int argc, char *argv[]) {
     if (argc != 2)
         return TEST_WRONG;
 
-    for (size_t i = 0; i < SIZE(test_list);
-    ++i)
-    if (strcmp(argv[1], test_list[i].name) == 0)
-        return test_list[i].function() ? TEST_PASS : TEST_FAIL;
+    for (size_t i = 0; i < SIZE(test_list); ++i)
+        if (strcmp(argv[1], test_list[i].name) == 0)
+            return test_list[i].function() ? TEST_PASS : TEST_FAIL;
 
     return TEST_WRONG;
 }
