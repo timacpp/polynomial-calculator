@@ -231,7 +231,7 @@ static void ProcessComposeCommand(PolyStack* stack, char* command, int lineNumbe
     } else if (!CommandValidArgument(command, nameLength + 1)) {
         PrintError(WRONG_COMPOSE_PARAMETER, lineNumber);
         return;
-    } else if (stack->size - 1 < composeDepth) {
+    } else if (stack->size == 0 || stack->size - 1 < composeDepth) {
         PrintError(STACK_UNDERFLOW, lineNumber);
         return;
     }
