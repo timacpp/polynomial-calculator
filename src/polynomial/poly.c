@@ -18,6 +18,8 @@
 
 #include "poly.h"
 
+#define CHECK_NULL_PTR(p) if (!p) exit(1)
+
 /**
  * Sprawdza, czy jednomian jest zerem. Zerowym jednomianem
  * nazywamy jednomian, przy którym stoi zerowy wielomian.
@@ -57,8 +59,7 @@ static Poly PolyAllocate(size_t polySize) {
             .arr = malloc(polySize * sizeof(Mono))
     };
 
-    if (!resPoly.arr) // W razie błędu alokacji pamięci
-        exit(1); // kończymy program awaryjnym kodem 1.
+    CHECK_NULL_PTR(resPoly.arr);
 
     return resPoly;
 }
@@ -276,7 +277,7 @@ static inline int MonoComparator(const void* m1, const void* m2) {
 }
 
 Poly PolyOwnMonos(size_t count, Mono *monos) {
-    if (count == 0 || monos == NULL)
+    if (count == 0 || !monos)
         return PolyZero();
 
     size_t resMonoID = 0;
@@ -305,6 +306,8 @@ Poly PolyOwnMonos(size_t count, Mono *monos) {
 
 Poly PolyAddMonos(size_t count, const Mono monos[]) {
     Mono* monosCopy = malloc(count * sizeof(Mono));
+
+    CHECK_NULL_PTR(monosCopy);
     memcpy(monosCopy, monos, count * sizeof(Mono));
 
     return PolyOwnMonos(count, monosCopy);
@@ -312,6 +315,8 @@ Poly PolyAddMonos(size_t count, const Mono monos[]) {
 
 Poly PolyCloneMonos(size_t count, const Mono monos[]) {
     Mono* monosCopy = malloc(count * sizeof(Mono));
+
+    CHECK_NULL_PTR(monosCopy);
 
     for (size_t curMonoID = 0; curMonoID < count; curMonoID++)
         monosCopy[curMonoID] = MonoClone(&monos[curMonoID]);
@@ -419,6 +424,7 @@ Poly PolySub(const Poly *p, const Poly *q) {
     Poly resPoly = PolyAdd(p, &qNegated);
 
     PolyDestroy(&qNegated);
+
     return resPoly;
 }
 
@@ -443,11 +449,11 @@ Poly PolyAt(const Poly *p, poly_coeff_t x) {
     Poly resPoly = PolyZero();
 
     for (size_t pMonoID = 0; pMonoID < p->size; pMonoID++) {
-        // Obliczenie wyrazu x^n, gdzie n - potęga obecnego jednomianu z 'p'
+        // Obliczenie wyrazu x^n, gdzie n - potęga obecnego jednomianu z 'p'.
         poly_exp_t curExp = MonoGetExp(&p->arr[pMonoID]);
         poly_coeff_t newCoeff = NumberToPower(x, curExp);
 
-        // Obiczenie wartości jednomiana w punkcie 'x'
+        // Obiczenie wartości jednomiana w punkcie 'x'.
         Poly coeffPoly = PolyFromCoeff(newCoeff);
         Poly midResult = PolyMul(MonoGetPoly(&p->arr[pMonoID]),
                                  &coeffPoly);
@@ -557,9 +563,11 @@ static Poly PolyToPower(const Poly *p, poly_exp_t exp) {
 static Poly PolyComposeFrom(const Poly *p, size_t idx, size_t k, const Poly q[]);
 
 static Poly MonoComposeFrom(const Mono *m, size_t idx, size_t k, const Poly q[]) {
+    // Podstawiamy zamiast argumentu odpowiedni wielomian.
     Poly toCompose = (idx < k ? q[idx] : PolyZero());
     Poly multinomial = PolyToPower(&toCompose, MonoGetExp(m));
 
+    // Rekurencyjnie kontynujemy złożenia bardziej zagłębionych wielomianów.
     Poly nextComposition = PolyComposeFrom(MonoGetPoly(m), idx + 1, k, q);
     Poly resPoly = PolyMul(&multinomial, &nextComposition);
 
@@ -572,6 +580,7 @@ static Poly MonoComposeFrom(const Mono *m, size_t idx, size_t k, const Poly q[])
 /**
  * Składa wielomian @p p z @p k wielomianami tablicy @p q
  * rozpoczynając od wielomianu z tablicy @p p o indeksie @p idx.
+ * Jednomiany wielomianu @p o indeksach mniejszych niż @pidx się zachowują.
  * @param[in] p : wielomian @f$p@f$
  * @param[in] q : tablica wielomianów
  * @param[in] k : liczba wielomianów
