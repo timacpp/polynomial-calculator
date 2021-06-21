@@ -317,7 +317,6 @@ Poly PolyCloneMonos(size_t count, const Mono monos[]) {
     Mono* monosCopy = malloc(count * sizeof(Mono));
 
     CHECK_NULL_PTR(monosCopy);
-
     for (size_t curMonoID = 0; curMonoID < count; curMonoID++)
         monosCopy[curMonoID] = MonoClone(&monos[curMonoID]);
 
@@ -580,7 +579,7 @@ static Poly MonoComposeFrom(const Mono *m, size_t idx, size_t k, const Poly q[])
 /**
  * Składa wielomian @p p z @p k wielomianami tablicy @p q
  * rozpoczynając od wielomianu z tablicy @p p o indeksie @p idx.
- * Jednomiany wielomianu @p o indeksach mniejszych niż @pidx się zachowują.
+ * Zmienne wielomianu @p o indeksach mniejszych niż @p idx się zachowują.
  * @param[in] p : wielomian @f$p@f$
  * @param[in] q : tablica wielomianów
  * @param[in] k : liczba wielomianów

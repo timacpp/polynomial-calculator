@@ -188,11 +188,13 @@ bool ReadPoly(Poly* p) {
 
     size_t size = strlen(buffer);
     bool correctPolyInput = IsCorrectPoly(buffer, size);
+
     if (correctPolyInput)
         *p = SubstringToPoly(buffer, 0, size);
 
     // SubstringToPoly może zmienić errno.
     bool successfulParsing = (errno == 0);
+
     if (!successfulParsing)
         PolyDestroy(p);
 

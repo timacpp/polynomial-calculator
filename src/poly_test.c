@@ -4000,7 +4000,7 @@ static bool ComposeTest(void) {
  */
 static bool PolyOwnTest(void) {
     Mono* monos = malloc(2 * sizeof(Mono));
-    assert(monos);
+    CHECK_PTR(monos);
 
     monos[0] = M(P(C(-1), 1), 1);
     monos[1] = M(P(C(1), 1), 2);
@@ -4027,7 +4027,7 @@ static bool PolyOwnTest(void) {
  */
 static bool PolyCloneTest(void) {
     Mono* monos = malloc(2 * sizeof(Mono));
-    assert(monos);
+    CHECK_PTR(monos);
 
     monos[0] = M(P(C(-1), 1), 1);
     monos[1] = M(P(C(1), 1), 2);
