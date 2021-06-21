@@ -298,9 +298,9 @@ static void ProcessCommand(PolyStack* stack, char* command, int lineNumber) {
  * @return Czy udało się wczytać komendę?
  */
 static bool ReadCommand(char** command) {
-    size_t size = 0, capacity = 1;
-    char curChar = (char) getchar();
+    int curChar = getchar();
     bool validChars = true;
+    size_t size = 0, capacity = 1;
 
     while (curChar != EOF && curChar != '\n') {
         validChars &= (curChar != '\0');
@@ -312,9 +312,9 @@ static bool ReadCommand(char** command) {
                 CHECK_NULL_PTR(*command);
             }
 
-            (*command)[size++] = curChar;
+            (*command)[size++] = (char) curChar;
         }
-        curChar = (char) getchar();
+        curChar =  getchar();
     }
 
     if (validChars)

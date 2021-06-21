@@ -12,36 +12,31 @@
 #include "calculator/calc_poly.h"
 #include "calculator/calc_command.h"
 
-char PeekCharacter() {
-    char nextChar = (char) getchar();
+int PeekCharacter() {
+    int nextChar = getchar();
     ungetc(nextChar, stdin);
     return nextChar;
 }
 
 bool HasNextLine() {
-    char peek = PeekCharacter();
+    int peek = PeekCharacter();
     return peek != EOF;
 }
 
 bool LineHasNoInformation() {
-    char peek = PeekCharacter();
+    int peek = PeekCharacter();
     return peek == '#' || peek == '\n';
 }
 
-bool NextCharacterIsLineEnd() {
-    char peek = PeekCharacter();
-    return peek == EOF || peek == '\n';
-}
-
 bool LineRepresentsCommand() {
-    char peek = PeekCharacter();
+    int peek = PeekCharacter();
     return isalpha(peek);
 }
 
 void LineIgnore() {
-    char curChar = (char) getchar();
+    int curChar = getchar();
     while (curChar != EOF && curChar != '\n')
-        curChar = (char) getchar();
+        curChar = getchar();
 }
 
 int main(void) {
@@ -50,7 +45,7 @@ int main(void) {
 
     int lineNumber = 1;
 
-    while(HasNextLine()) {
+    while (HasNextLine()) {
         if (LineHasNoInformation())
             LineIgnore();
         else if (LineRepresentsCommand())

@@ -141,7 +141,7 @@ static bool IsCorrectPoly(const char* stringPoly, size_t length) {
     return IsCorrectNonCoeffPoly(stringPoly, length);
 }
 
-static bool IsValidPolyChar(char curChar) {
+static bool IsValidPolyChar(int curChar) {
     return curChar == '(' || curChar == ')' || curChar == ',' ||
            curChar == '+' || curChar == '-' || isdigit(curChar);
 }
@@ -153,9 +153,9 @@ static bool IsValidPolyChar(char curChar) {
  * @return Czy udało się wczytać wielomian?
  */
 static bool ReadStringPoly(char** buffer) {
-    size_t size = 0, capacity = 1;
-    char curChar = (char) getchar();
+    int curChar = getchar();
     bool validChars = true;
+    size_t size = 0, capacity = 1;
 
     while (curChar != EOF && curChar != '\n') {
         validChars &= IsValidPolyChar(curChar);
@@ -166,9 +166,9 @@ static bool ReadStringPoly(char** buffer) {
                 CHECK_NULL_PTR(*buffer);
             }
 
-            (*buffer)[size++] = curChar;
+            (*buffer)[size++] = (char) curChar;
         }
-        curChar = (char) getchar();
+        curChar = getchar();
     }
 
     if (validChars)
