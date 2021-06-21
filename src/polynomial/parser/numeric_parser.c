@@ -16,7 +16,7 @@
 #define CHECK_NULL_PTR(p) if (!p) exit(1)
 
 static char* ExtractSubstring(const char* source, size_t from, size_t to) {
-    const int numberLength = to - from;
+    const int numberLength = (int) (to - from);
 
     if (numberLength < 0)
         return NULL;

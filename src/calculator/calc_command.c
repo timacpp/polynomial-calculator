@@ -237,9 +237,9 @@ static void ProcessComposeCommand(PolyStack* stack, char* command, int lineNumbe
     }
 
     Poly topPoly = PopPoly(stack), toCompose[composeDepth];
+
     for (size_t i = 0; i < composeDepth; i++)
         toCompose[composeDepth - i - 1] = PopPoly(stack);
-
     PushPoly(stack, PolyCompose(&topPoly, composeDepth, toCompose));
 
     PolyDestroy(&topPoly);
