@@ -62,6 +62,15 @@ static inline poly_exp_t MonoGetExp(const Mono *m) {
 }
 
 /**
+ * Daje wskaźnik na wielomian przy jednomianie
+ * @param[in] m : jednomian
+ * @return wskaźnik na wielomian
+ */
+static inline Poly* MonoGetPoly(const Mono *m) {
+    return (Poly*) &m->p;
+}
+
+/**
  * Tworzy wielomian, który jest współczynnikiem (wielomian stały).
  * @param[in] c : wartość współczynnika
  * @return wielomian
@@ -111,6 +120,16 @@ static inline bool PolyIsZero(const Poly *p) {
 }
 
 /**
+ * Sprawdza, czy jednomian jest zerem. Zerowym jednomianem
+ * nazywamy jednomian, przy którym stoi zerowy wielomian.
+ * @param[in] m : jednomian
+ * @return Czy jednomian jest zerem?
+ */
+static inline bool MonoIsZero(const Mono *m) {
+    return PolyIsZero(&m->p);
+}
+
+/**
  * Usuwa wielomian z pamięci.
  * @param[in] p : wielomian
  */
@@ -137,8 +156,12 @@ Poly PolyClone(const Poly *p);
  * @return skopiowany jednomian
  */
 static inline Mono MonoClone(const Mono *m) {
-  return (Mono) {.p = PolyClone(&m->p), .exp = m->exp};
+  return (Mono) {
+      .p = PolyClone(&m->p),
+      .exp = m->exp
+  };
 }
+
 
 /**
  * Dodaje dwa wielomiany.
@@ -255,3 +278,4 @@ Poly PolyAt(const Poly *p, poly_coeff_t x);
 Poly PolyCompose(const Poly *p, size_t k, const Poly q[]);
 
 #endif /* __POLY_H__ */
+
