@@ -1,15 +1,13 @@
 /** @file
-  Intefejs managera błędów kalkulatora wielomianów wielu zmiennych.
+  Interface of calculator error managing.
 
-  @authors Tymofii Vedmedenko <tv433559@students.mimuw.edu.pl>
-  @copyright Uniwersytet Warszawski
   @date 2021
 */
 
 #ifndef POLYNOMIALS_CALC_ERROR_H
 #define POLYNOMIALS_CALC_ERROR_H
 
-/** To jest typ uogólniający możliwe błędy operacyjne kalkulatora. */
+/** Enumeration of possible calculator errors */
 typedef enum CalcError {
     WRONG_POLY,
     WRONG_COMMAND,
@@ -19,6 +17,11 @@ typedef enum CalcError {
     WRONG_COMPOSE_PARAMETER
 } CalcError;
 
+/**
+ * Displays an error on stderr.
+ * @param[in] error : error to print.
+ * @param[in] line : line ordinal where error occurred.
+ */
 void PrintError(CalcError error, int line);
 
 #endif //POLYNOMIALS_CALC_ERROR_H

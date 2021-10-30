@@ -1,8 +1,6 @@
 /** @file
-  Implementacja procesora komend kalkulatora wielomianów wielu zmiennych.
+  Implementation of a calculator command processor.
 
-  @authors Tymofii Vedmedenko <tv433559@students.mimuw.edu.pl>
-  @copyright Uniwersytet Warszawski
   @date 2021
 */
 
@@ -14,8 +12,8 @@
 
 #include "calc_command.h"
 #include "calc_error.h"
-#include "../polynomial/poly_io.h"
-#include "../polynomial/parser/numeric_parser.h"
+#include "../polynomial/io/poly_io.h"
+#include "../polynomial/io/numeric_parser.h"
 
 #define CHECK_NULL_PTR(p) if (!p) exit(1)
 
@@ -248,11 +246,11 @@ static void ProcessComposeCommand(PolyStack* stack, char* command, int lineNumbe
 }
 
 /**
- * Przetwarza komendę będącym napisem na działania na stosie wielomianów.
- * W przypadku nie istniejącej komendy wypisa błąd o niepoprawnej komendzie.
- * @param[in] stack : stos wielomianów
- * @param[in] command : komenda
- * @param[in] lineNumber : numer linijki
+ * Performs a command based on its' name. If the command does not exist,
+ * the custom calculator error will be displayed.
+ * @param[in] stack : stack wit polynomials
+ * @param[in] command : name of a command to process
+ * @param[in] lineNumber : ordinal of a line
  */
 static void ProcessCommand(PolyStack* stack, char* command, int lineNumber) {
     if (strcmp(command, "ZERO") == 0)
@@ -290,12 +288,9 @@ static void ProcessCommand(PolyStack* stack, char* command, int lineNumber) {
 }
 
 /**
- * Wczytuje komendę reprezentowaną jako napis do wartości przekazanego
- * wzkaźnika. Jeżeli podczas wczytania wystąpi nielegalny symbol '\0'
- * albo zastanie ukryta za długa komenda, to funkcja zwraca falsz.
- * W przeciwnym przypadku zwracana jest wartość true.
- * @param[in] command : wskaźnik do wczytania komendy
- * @return Czy udało się wczytać komendę?
+ * Reads a command name to a @p command. Returns true if input is legal.
+ * @param[in] command : destination for reading
+ * @return Is input legal?
  */
 static bool ReadCommand(char** command) {
     int curChar = getchar();
@@ -324,17 +319,16 @@ static bool ReadCommand(char** command) {
 }
 
 void ProcessCommandInput(PolyStack* stack, int lineNumber) {
-    // Funkcje wywołane w tym bloku mogą zmieniać stan errno, dlatego
-    // przed wykonaniem nowej komędy ustawiamy go na początkową wartość.
-    errno = 0;
+    errno = 0; /* The state could have been changed during the parsing. */
 
     char* command = NULL;
     bool successfulRead = ReadCommand(&command);
 
-    if (successfulRead)
+    if (successfulRead) {
         ProcessCommand(stack, command, lineNumber);
-    else
+    } else {
         PrintError(WRONG_COMMAND, lineNumber);
+    }
 
     free(command);
 }

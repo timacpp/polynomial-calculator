@@ -1,20 +1,12 @@
 /** @file
-  Implementacja managera błędów kalkulatora wielomianów wielu zmiennych.
+  Implementation of calculator error managing.
 
-  @authors Tymofii Vedmedenko <tv433559@students.mimuw.edu.pl>
-  @copyright Uniwersytet Warszawski
   @date 2021
 */
 
 #include <stdio.h>
-
 #include "calc_error.h"
 
-/**
- * Wypisuje błąd na wyjście błędów.
- * @param[in] error : błąd
- * @param[in] line : numer linijki
- */
 void PrintError(CalcError error, int line) {
     switch (error) {
         case WRONG_POLY:
