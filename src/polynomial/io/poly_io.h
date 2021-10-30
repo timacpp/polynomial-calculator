@@ -9,7 +9,7 @@
 #ifndef POLYNOMIALS_POLY_IO_H
 #define POLYNOMIALS_POLY_IO_H
 
-#include "poly.h"
+#include "../poly.h"
 
 /**
  * Wczytuje wielomian do przekazanego wkaźnika.

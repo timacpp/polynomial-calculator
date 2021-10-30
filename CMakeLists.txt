@@ -25,7 +25,7 @@ set(CALC_SOURCE_FILES
         src/polynomial/poly.c                   src/polynomial/poly.h
         src/polynomial/io/poly_io.c src/polynomial/io/poly_io.h
         src/polynomial/poly_stack.c src/polynomial/poly_stack.h
-        src/calculator/error.c src/calculator/error.h
+        src/calculator/calc_error.c src/calculator/calc_error.h
         src/calculator/calc_poly.c src/calculator/calc_poly.h
         src/calculator/calc_command.c src/calculator/calc_command.h
         src/polynomial/io/numeric_parser.c src/polynomial/io/numeric_parser.h

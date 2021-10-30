@@ -50,7 +50,7 @@ int main(void) {
             LineIgnore();
         else if (LineRepresentsCommand())
             ProcessCommandInput(&stack, lineNumber);
-        else // Linijka reprezentuje wielomian.
+        else // Line represents a polynomial.
             ProcessPolyInput(&stack, lineNumber);
 
         lineNumber++;

@@ -9,7 +9,7 @@
 #ifndef POLYNOMIALS_POLY_STACK_H
 #define POLYNOMIALS_POLY_STACK_H
 
-#include "../poly.h"
+#include "poly.h"
 
 /** To jest typ reprezentujący stos wielomianów. */
 typedef struct PolyStack {

@@ -13,7 +13,7 @@
 #include <ctype.h>
 
 #include "poly_io.h"
-#include "parser/poly_parser.h"
+#include "poly_parser.h"
 
 #define CHECK_NULL_PTR(p) if (!p) exit(1)
 
