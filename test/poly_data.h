@@ -1,7 +1,7 @@
 #define POLY_DATA
 #ifdef POLY_DATA
 
-#include "../src/polynomial/poly.h"
+#include "../src/poly/poly.h"
 
 /** DATA FOR TESTS **/
 
