@@ -1,6 +1,8 @@
 /** @file
   Implementation of a calculator command processor.
 
+  @author Tymofii Vedmedenko
+  @copyright University of Warsaw
   @date 2021
 */
 
@@ -10,10 +12,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "calc_command.h"
 #include "calc_error.h"
-#include "../polynomial/io/poly_io.h"
-#include "../polynomial/io/numeric_parser.h"
+#include "calc_command.h"
+#include "../poly/io/poly_io.h"
+#include "../poly/io/numeric_parser.h"
 
 #define CHECK_NULL_PTR(p) if (!p) exit(1)
 
@@ -247,7 +249,7 @@ static void ProcessComposeCommand(PolyStack* stack, char* command, int lineNumbe
 
 /**
  * Performs a command based on its' name. If the command does not exist,
- * the custom calculator error will be displayed.
+ * the custom calc error will be displayed.
  * @param[in] stack : stack wit polynomials
  * @param[in] command : name of a command to process
  * @param[in] lineNumber : ordinal of a line

@@ -1,8 +1,8 @@
 /** @file
-  Implementacja funkcji parsujących wielomiany wielu zmiennych.
+  Implementation of polynomial parsing functions.
 
-  @authors Tymofii Vedmedenko <tv433559@students.mimuw.edu.pl>
-  @copyright Uniwersytet Warszawski
+  @author Tymofii Vedmedenko
+  @copyright University of Warsaw
   @date 2021
 */
 
@@ -16,12 +16,11 @@
 #define CHECK_NULL_PTR(p) if (!p) exit(1)
 
 /**
- * Parsuje spójny pocjąg napisu reprezentujący
- * poprawny wielomian na jednomian.
- * @param[in] source : napis
- * @param[in] from : początek podciągu (włączając)
- * @param[in] to : koniec podciągu (nie włączająć)
- * @return Sparsowany jednomian
+ * Parses a range [@p from, @p to) of characters from @p source onto monomial.
+ * @param[in] source : word
+ * @param[in] from : including start
+ * @param[in] to : excluding end
+ * @return parsed monomial
  */
 static Mono SubstringToMono(const char* source, size_t from, size_t to) {
     size_t expStartIdx = to - 1; // Pierwza cyfra wykładnika jest conajwyżej w indeksie (to - 1).
@@ -38,13 +37,10 @@ static Mono SubstringToMono(const char* source, size_t from, size_t to) {
 }
 
 /**
- * Daje następny indeks znaku w @p source po @p pos, który
- * się znajduje na zerowym stopniu zagłębenia w wielomianie.
- * Zakładamy, że @p source odpowiada poprawnemu wielomianowi.
- * @param[in] source : napis
- * @param[in] from : początek wycinku (włączając)
- * @param[in] to : koniec wycinku (nie włączająć)
- * @return Sparsowany jednomian
+ * Gives index of of an end of the polynomial starting from @p pos in @p source.
+ * @param[in] source : word
+ * @param[in] pos : starting position of a polynomial
+ * @return index of a closing parenthesis
  */
 static size_t FindParenthesisBalancePosition(const char* source, size_t pos) {
     size_t depth = 0; // Stopień zagłębienia.
@@ -61,12 +57,11 @@ static size_t FindParenthesisBalancePosition(const char* source, size_t pos) {
 }
 
 /**
- * Przetwarza spójny podciąg napisu reprezentujący
- * poprawnemy wielomian na niestały wielomian.
- * @param[in] source : napis
- * @param[in] from : początek podciągu (włączając)
- * @param[in] to : koniec podciągu (nie włączająć)
- * @return Sparsowany niestały wielomian
+ * Parses a range [@p from, @p to) of characters from @p source onto non-constant poly.
+ * @param[in] source : word
+ * @param[in] from : including start
+ * @param[in] to : excluding end
+ * @return parsed monomial
  */
 static Poly SubstringToNonCoeffPoly(const char* source, size_t from, size_t to) {
     Mono* monos = NULL;
@@ -95,12 +90,11 @@ static Poly SubstringToNonCoeffPoly(const char* source, size_t from, size_t to) 
 
 
 /**
- * Sprawdza czy spójny podciąg napisu reprezentujący
- * poprawny wielomian odpowiada wielomianowi stałemu.
- * @param[in] source : napis
- * @param[in] from : początek podciągu (włączając)
- * @param[in] to : koniec podciągu (nie włączająć)
- * @return Czy wycinek napisu reprezentuje wielomian stały?
+ * Checks whether a range [@p from, @p to) of characters from @p source represent a number.
+ * @param[in] source : word
+ * @param[in] from : including start
+ * @param[in] to : excluding end
+ * @return is range a number?
  */
 static bool SubstringIsNumber(const char* source, size_t from, size_t to) {
     // Aby dowiedzieć że wielomian jest stały, wystarczy sprawdzić pierwszy i ostatni
@@ -108,14 +102,6 @@ static bool SubstringIsNumber(const char* source, size_t from, size_t to) {
     return (isdigit(source[from]) || source[from] == '-') && isdigit(source[to - 1]);
 }
 
-/**
- * Przetwarza spójny podciąg reprezentujący
- * poprawny wielomian na wielomian.
- * @param[in] source : napis
- * @param[in] from : początek podciągu (włączając)
- * @param[in] to : koniec podciągu (nie włączająć)
- * @return Sparsowany wielomian
- */
 Poly SubstringToPoly(const char* source, size_t from, size_t to) {
     assert(from <= to);
 

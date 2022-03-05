@@ -1,8 +1,8 @@
 /** @file
-  Implementacja operacji wejściowo-wyjściowych wielomianów rzadkich wielu zmiennych
+  Implementation of input-output operations on multi-variable polynomials.
 
-  @authors Tymofii Vedmedenko <tv433559@students.mimuw.edu.pl>
-  @copyright Uniwersytet Warszawski
+  @author Tymofii Vedmedenko
+  @copyright University of Warsaw
   @date 2021
 */
 
@@ -18,8 +18,8 @@
 #define CHECK_NULL_PTR(p) if (!p) exit(1)
 
 /**
- * Wypisuje jednomian.
- * @param[in] m : jednomian
+ * Prints monomial.
+ * @param[in] m :  monomial
  */
 static void MonoPrint(const Mono* m) {
     printf("(");
@@ -43,11 +43,11 @@ void PolyPrint(const Poly* p) {
 }
 
 /**
- * Sprawdza, czy po pewnym znaku wielomianu może występować następny.
- * @param[in] cur : znak do sprawdzenia
- * @param[in] prev : poprzedni znak
- * @param[in] lastNonDigit : ostatni niecyfrowy znak
- * @return Czy może znak @p cur występować po @p prev?
+ * Checks whether a correct input line can contain character @p cur after @p prev.
+ * @param[in] cur : current character
+ * @param[in] prev : previous character
+ * @param[in] lastNonDigit : last non-digit character
+ * @return Can @p cur be after @p prev?
  */
 static bool IsValidPolyCharAfter(char cur, char prev, char lastNonDigit) {
     // Zmienna sprawdza czy prev wskazuje na cyfrę współczynnika, ponieważ
@@ -75,10 +75,10 @@ static bool IsValidPolyCharAfter(char cur, char prev, char lastNonDigit) {
 }
 
 /**
- * Sprawdza, czy napis reprezentuje poprawny niestały wielomian.
- * @param[in] stringPoly: napis
- * @param[in] length : długość napisu
- * @return Czy może @p stringPoly reprezentuje poprawny niestały wielomian?
+ * Checks whether @p stringPoly represents a correct non-constant polynomial.
+ * @param[in] stringPoly : sequence of characters
+ * @param[in] length : lengths of the sequence
+ * @return Does @p stringPoly represent a correct non-constant polynomial?
  */
 static bool IsCorrectNonCoeffPoly(const char* stringPoly, size_t length) {
     // Każdy wielomian niestały ma nawiasy z dwóch stron.
@@ -108,10 +108,10 @@ static bool IsCorrectNonCoeffPoly(const char* stringPoly, size_t length) {
 }
 
 /**
- * Sprawdza, czy napis reprezentuje poprawny stały wielomian.
- * @param[in] stringPoly: napis
- * @param[in] length : długość napisu
- * @return Czy może @p stringPoly reprezentuje poprawny stały wielomian?
+ * Checks whether @p stringPoly represents a correct constant polynomial.
+ * @param[in] stringPoly : sequence of characters
+ * @param[in] length : lengths of the sequence
+ * @return Does @p stringPoly represent a correct constant polynomial?
  */
 static bool IsCorrectCoeffPoly(const char* stringPoly, size_t length) {
     // Jak wielomian się składa tylko z minusu, to nie jest poprawny.
@@ -130,10 +130,10 @@ static bool IsCorrectCoeffPoly(const char* stringPoly, size_t length) {
 }
 
 /**
- * Sprawdza, czy napis reprezentuje poprawny wielomian.
- * @param[in] stringPoly: napis
- * @param[in] length : długość napisu
- * @return Czy może @p stringPoly reprezentuje poprawny wielomian?
+ * Checks whether @p stringPoly represents a correct polynomial.
+ * @param[in] stringPoly : sequence of characters
+ * @param[in] length : lengths of the sequence
+ * @return Does @p stringPoly represent a correct polynomial?
  */
 static bool IsCorrectPoly(const char* stringPoly, size_t length) {
     if (IsCorrectCoeffPoly(stringPoly, length))
@@ -147,10 +147,9 @@ static bool IsValidPolyChar(int curChar) {
 }
 
 /**
- * Wczytuje napis reprezentujący wielomian
- * do przekazywanego wskaźnika na buffor.
- * @param[in] buffer: buffor do wczytania wielomianu
- * @return Czy udało się wczytać wielomian?
+ * Reads a line representing a polynomial to @p buffer.
+ * @param[in] buffer: buffer for unparsed polynomial.
+ * @return Was the read successful?
  */
 static bool ReadStringPoly(char** buffer) {
     int curChar = getchar();

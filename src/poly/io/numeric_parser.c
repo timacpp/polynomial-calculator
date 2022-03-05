@@ -1,8 +1,8 @@
 /** @file
-  Implementacja funkcji parsujących liczbowe wartości.
+  Implementation of numeric parsing function.
 
-  @authors Tymofii Vedmedenko <tv433559@students.mimuw.edu.pl>
-  @copyright Uniwersytet Warszawski
+  @author Tymofii Vedmedenko
+  @copyright University of Warsaw
   @date 2021
 */
 

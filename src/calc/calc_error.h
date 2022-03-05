@@ -1,13 +1,15 @@
 /** @file
   Interface of calculator error managing.
 
+  @author Tymofii Vedmedenko
+  @copyright University of Warsaw
   @date 2021
 */
 
 #ifndef POLYNOMIALS_CALC_ERROR_H
 #define POLYNOMIALS_CALC_ERROR_H
 
-/** Enumeration of possible calculator errors */
+/** Enumeration of possible calc errors */
 typedef enum CalcError {
     WRONG_POLY,
     WRONG_COMMAND,

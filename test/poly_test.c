@@ -540,7 +540,7 @@ static bool DegTest(void) {
 }
 
 /**
- * Creates polynomial with one variable from coefficients and exponents.
+ * Creates poly with one variable from coefficients and exponents.
  * @param count number of monomials
  * @param val coefficients
  * @param exp exponents
@@ -564,7 +564,7 @@ static Poly MakePoly(size_t count, const poly_coeff_t *val, poly_exp_t *exp) {
 }
 
 /**
- * Creates multi-variable polynomial from coefficients and exponents.
+ * Creates multi-variable poly from coefficients and exponents.
  * @param count number of monomials
  * @param val coefficients
  * @param exp exponents
@@ -580,7 +580,7 @@ static Poly MakePolyFromPolynomials(size_t count, const Poly *val,
 }
 
 /**
- *  Creates polynomial with of an arbitrary depth
+ *  Creates poly with of an arbitrary depth
  *  using first exponent and coefficient dataset.
  */
 static Poly RecursiveBuild(int depth, int *exp_shift, int *coef_shift) {
@@ -608,7 +608,7 @@ static Poly RecursiveBuild(int depth, int *exp_shift, int *coef_shift) {
 }
 
 /**
- *  Creates polynomial with of an arbitrary depth
+ *  Creates poly with of an arbitrary depth
  *  using second exponent and coefficient dataset.
  */
 static Poly RecursiveBuild2(int depth, int *exp_shift, int *coef_shift,
@@ -718,7 +718,7 @@ static bool MulTest1(void) {
 }
 
 /**
- *  Creates polynomial with @p rec variables
+ *  Creates poly with @p rec variables
  *  where each variable is bind to one monomial.
  */
 static Poly BuildRecursivePoly(const poly_coeff_t *coef_arr,

@@ -1,15 +1,8 @@
 /** @file
-  Implementacja klasy wielomianów rzadkich wielu zmiennych.
-  Przyjmiemy pewne założenia o wielomianach:
+  Implementation of a class of rare multi-variable polynomials
 
-  (a) Wielomian ma posortowane jednomiany w porządku rosnącym według wykładników.
-
-  (b) Wielomian jest stały wtedy i tylko wtedy, gdy nie ma jednomianów.
-
-  (c) Wielomian niestały nie może mieć zerowego jednomianu.
-
-  @author Tymofii Vedmedenko <tv433559@students.mimuw.edu.pl>
-  @copyright Uniwersytet Warszawski
+  @author Tymofii Vedmedenko
+  @copyright University of Warsaw
   @date 2021
 */
 
@@ -21,18 +14,18 @@
 #define CHECK_NULL_PTR(p) if (!p) exit(1)
 
 /**
- * Sprawdza, czy wielomian przy jednomianie jest stały.
- * @param[in] m : jednomian
- * @return Czy wielomian przy jednomianie jest stały?
+ * Checks whether the monomial is constant
+ * @param[in] m : monomial
+ * @return Is monomial constant?
  */
 static inline bool MonoHasConstPoly(const Mono *m) {
     return PolyIsCoeff(&m->p);
 }
 
 /**
- * Tworzy pusty niestały wielomian pewnego rozmiaru.
- * @param[in] polySize : rozmiar wielomianu
- * @return wielomian ustalonego rozmiaru z alakowaną pamięcią
+ * Creates empty non-constant polynomial of a given size.
+ * @param[in] polySize : size
+ * @return polynomial of a fixed-size
  */
 static Poly PolyAllocate(size_t polySize) {
     Mono* monos = malloc(polySize * sizeof(Mono));
@@ -54,9 +47,9 @@ void PolyDestroy(Poly *p) {
 }
 
 /**
- * Tworzy głęboką kopię wielomianu p, zapisując ją do pCopy.
- * @param[in] p : wielomian do kopiowania (source)
- * @param[in] pCopy : wielomian do zapisywania (destination)
+ * Creates a deep copy of a polynomial @p, writing it to @p pCopy.
+ * @param[in] p : polynomial to copy
+ * @param[in] pCopy : polynomial to store a copy
  */
 static void PolyDeepCopy(const Poly* p, Poly* pCopy) {
     if (PolyIsCoeff(p)) {
@@ -83,12 +76,10 @@ static bool PolyFreeTerm(const Poly* p) {
 }
 
 /**
- * Zmniejsza rozmiar wielomianu do newSize oraz
- * redukuje wielomian niestały do stałego, jeżeli on
- * się składa tylko z jednego jednomianu postaci @f$c * x^0@f$
- * @param[in] p : wielomian
- * @param[in] newSize : nowy rozmiar
- * @return Zredukowany wielomian
+ * Reduces the size of a polynomial to @p newSize or a constant.
+ * @param[in] p : polynomial to reduce
+ * @param[in] newSize : size of a reduced polynomial
+ * @return reduced polynomial
  */
 static Poly PolyReduce(Poly *p, size_t newSize) {
     p->size = newSize;
@@ -103,9 +94,9 @@ static Poly PolyReduce(Poly *p, size_t newSize) {
 }
 
 /**
- * Dodaje dwa jednomiany jednego stopnia.
- * @param[in] m1 : jednomian @f$m_1@f$
- * @param[in] m2 : jednomian @f$m_2@f$
+ * Adds two monomials of a same degree
+ * @param[in] m1 : monomial @f$m_1@f$
+ * @param[in] m2 : monomial @f$m_2@f$
  * @return @f$m_1 + m_2@f$
  */
 static inline Mono MonoAdd(const Mono *m1, const Mono *m2) {
@@ -117,9 +108,9 @@ static inline Mono MonoAdd(const Mono *m1, const Mono *m2) {
 }
 
 /**
- * Dodaje dwa wielomiany niestale.
- * @param[in] p : niestały wielomian @f$p@f$
- * @param[in] q : niestały wielomian @f$q@f$
+ * Adds two non-constant polynomials.
+ * @param[in] p : non-constant polynomial @f$p@f$
+ * @param[in] q : non-constant polynomial @f$q@f$
  * @return @f$p + q@f$
  */
 static Poly PolyAddNoConst(const Poly *p, const Poly *q) {
@@ -149,9 +140,9 @@ static Poly PolyAddNoConst(const Poly *p, const Poly *q) {
 }
 
 /**
- * Dodaje stały wielomian p i niestały wielomian q.
- * @param[in] p : stały wielomian @f$p@f$
- * @param[in] q : niestały wielomian @f$q@f$
+ * Adds constant polynomial @p p to a non-constant polynomial @p q.
+ * @param[in] p : constant polynomial @f$p@f$
+ * @param[in] q : non-constant polynomial @f$q@f$
  * @return @f$p + q@f$
  */
 static Poly PolyAddOneConst(const Poly* p, const Poly* q) {
@@ -174,9 +165,9 @@ static Poly PolyAddOneConst(const Poly* p, const Poly* q) {
 }
 
 /**
- * Dodaje dwa stałe wielomiany.
- * @param[in] p : stały wielomian @f$p@f$
- * @param[in] q : stały wielomian @f$q@f$
+ * Adds two constant polynomials.
+ * @param[in] p : constant polynomial @f$p@f$
+ * @param[in] q : constant polynomial @f$q@f$
  * @return @f$p + q@f$
  */
 static Poly PolyAddBothConst(const Poly *p, const Poly *q) {
@@ -193,10 +184,9 @@ Poly PolyAdd(const Poly *p, const Poly *q) {
 }
 
 /**
- * Dodaje wielomian @f$q@f$ do wielomiana @f$p@f$
- * Wielomian @f$p@f$ jest przyjmowany na własność.
- * @param[in] p : wielomian do aktualizacji @f$p@f$
- * @param[in] q : wielomian do dodawania @f$q@f$
+ * Adds polynomial @f$q@f$ to polynomial @f$p@f$ and performs left-side assignment.
+ * @param[in] p : polynomial to update @f$p@f$
+ * @param[in] q : polynomial to add @f$q@f$
  */
 static void PolyAddTo(Poly *p, const Poly *q) {
     Poly midResult = PolyAdd(p, q);
@@ -206,10 +196,9 @@ static void PolyAddTo(Poly *p, const Poly *q) {
 
 
 /**
- * Mnoży przez wielomian @f$q@f$ wielomian @f$p@f$
- * Wielomian @f$p@f$ jest przyjmowany na własność.
- * @param[in] p : wielomian do aktualizacji @f$p@f$
- * @param[in] q : wielomian do dodawania @f$q@f$
+ * Multiples polynomial @f$q@f$ by polynomial @f$p@f$ and performs left-side assignment.
+ * @param[in] p : polynomial to update @f$p@f$
+ * @param[in] q : polynomial to add @f$q@f$
  */
 static void PolyMulBy(Poly *p, const Poly *q) {
     Poly midResult = PolyMul(p, q);
@@ -218,10 +207,9 @@ static void PolyMulBy(Poly *p, const Poly *q) {
 }
 
 /**
- * Dodaje jednomian @f$m_2@f$ do jednomiana @f$m_1@f$
- * Jednomian @f$m_1@f$ jest przyjmowany na własność.
- * @param[in] m1 : jednomian do aktualizacji @f$m_1@f$
- * @param[in] m2 : jednomian do dodawania @f$m_2@f$
+ * Adds monomial @f$q@f$ to monomial @f$p@f$ and performs left-side assignment.
+ * @param[in] m1 : monomial to update @f$p@f$
+ * @param[in] m2 : monomial to add @f$q@f$
  */
 static void MonoAddTo(Mono *m1, const Mono *m2) {
     Mono midResult = MonoAdd(m1, m2);
@@ -230,11 +218,10 @@ static void MonoAddTo(Mono *m1, const Mono *m2) {
 }
 
 /**
- * Komparator dla sortowania tablicy jednomianów
- * w porządku rosnącym według wartości potęg.
- * @param[in] m1 : jednomian @f$m_1@f$
- * @param[in] m2 : jednomian @f$m_2@f$
- * @return róznica wykładników
+ * Comparator for sorting monomials by exponents in ascending order.
+ * @param[in] m1 : monomial @f$m_1@f$
+ * @param[in] m2 : monomial @f$m_2@f$
+ * @return difference of exponents
  */
 static inline int MonoComparator(const void* m1, const void* m2) {
      return MonoGetExp(m1) - MonoGetExp(m2);
@@ -288,9 +275,9 @@ Poly PolyCloneMonos(size_t count, const Mono monos[]) {
 }
 
 /**
- * Mnoży dwa jednomiany.
- * @param[in] m1 : jednomian @f$m_1@f$
- * @param[in] m2 : jednomian @f$m_2@f$
+ * Multiples two monomials.
+ * @param[in] m1 : monomial @f$m_1@f$
+ * @param[in] m2 : monomial @f$m_2@f$
  * @return @f$m1 * m2@f$
  */
 static inline Mono MonoMul(const Mono *m1, const Mono *m2) {
@@ -301,9 +288,9 @@ static inline Mono MonoMul(const Mono *m1, const Mono *m2) {
 }
 
 /**
- * Mnoży dwa wielomiany niestale.
- * @param[in] p : niestały wielomian @f$p@f$
- * @param[in] q : niestały wielomian @f$q@f$
+ * Multiples non-constant monomials
+ * @param[in] p : non-constant monomial @f$p@f$
+ * @param[in] q : non-constant monomial  @f$q@f$
  * @return @f$p * q@f$
  */
 static Poly PolyMulNoConst(const Poly *p, const Poly *q) {
@@ -328,9 +315,9 @@ static Poly PolyMulNoConst(const Poly *p, const Poly *q) {
 }
 
 /**
- * Mnoży stały wielomian p i niestały q.
- * @param[in] p : stały wielomian @f$p@f$
- * @param[in] q : niestały wielomian @f$q@f$
+ * Multiples constant and non-constant polynomials.
+ * @param[in] p : constant polynomial @f$p@f$
+ * @param[in] q : non-constant polynomial @f$q@f$
  * @return @f$p * q@f$
  */
 static Poly PolyMulOneConst(const Poly *p, const Poly *q) {
@@ -353,9 +340,9 @@ static Poly PolyMulOneConst(const Poly *p, const Poly *q) {
 }
 
 /**
- * Mnoży dwa stale wielomiany.
- * @param[in] p : stały wielomian @f$p@f$
- * @param[in] q : stały wielomian @f$q@f$
+ * Multiples two constant polynomials.
+ * @param[in] p : constant polynomial @f$p@f$
+ * @param[in] q : constant polynomial @f$q@f$
  * @return @f$p * q@f$
  */
 static Poly PolyMulBothConst(const Poly *p, const Poly *q) {
@@ -386,9 +373,9 @@ Poly PolySub(const Poly *p, const Poly *q) {
 }
 
 /**
- * Podniesienie do potęgi w czasie logarytmicznym.
- * @param[in] base : podstawa @f$x@f$
- * @param[in] exp : wykładnik @f$n@f$
+ * Raises number @p base to power @p exp.
+ * @param[in] base : @f$x@f$
+ * @param[in] exp : @f$n@f$
  * @return @f$x^n@f$
  */
 static poly_coeff_t NumberToPower(poly_coeff_t base, poly_exp_t exp) {
@@ -463,9 +450,9 @@ poly_exp_t PolyDeg(const Poly *p) {
 }
 
 /**
- * Sprawdza równość dwóch jednomianów.
- * @param[in] m1 : jednomian @f$m_1@f$
- * @param[in] m2 : jednomian @f$m_2@f$
+ * Checks whether two monomials are equal.
+ * @param[in] m1 : monomial @f$m_1@f$
+ * @param[in] m2 : monomial @f$m_2@f$
  * @return @f$m_1 = m_2@f$
  */
 static inline bool MonoIsEq(const Mono *m1, const Mono *m2) {
@@ -487,9 +474,9 @@ bool PolyIsEq(const Poly *p, const Poly *q) {
 }
 
 /**
- * Podnosi wielomian @p p do potęgi @p exp.
- * @param[in] p : wielomian @f$p@f$
- * @param[in] exp: wielomian
+ * Raises polynomial @p p to the power @p exp.
+ * @param[in] p : polynomial @f$p@f$
+ * @param[in] exp : exponent
  * @return @f$p^exp@f$
  */
 static Poly PolyToPower(const Poly *p, poly_exp_t exp) {
@@ -511,6 +498,7 @@ static Poly PolyToPower(const Poly *p, poly_exp_t exp) {
 
 static Poly PolyComposeFrom(const Poly *p, size_t idx, size_t k, const Poly q[]);
 
+/** See PolyComposeFrom. Composes monomial @p m with polynomials starting from index @p idx */
 static Poly MonoComposeFrom(const Mono *m, size_t idx, size_t k, const Poly q[]) {
     // Podstawiamy zamiast argumentu odpowiedni wielomian.
     Poly toCompose = (idx < k ? q[idx] : PolyZero());
@@ -526,16 +514,7 @@ static Poly MonoComposeFrom(const Mono *m, size_t idx, size_t k, const Poly q[])
     return resPoly;
 }
 
-/**
- * Składa wielomian @p p z @p k wielomianami tablicy @p q
- * rozpoczynając od wielomianu z tablicy @p p o indeksie @p idx.
- * Zmienne wielomianu @p o indeksach mniejszych niż @p idx się zachowują.
- * @param[in] p : wielomian @f$p@f$
- * @param[in] q : tablica wielomianów
- * @param[in] k : liczba wielomianów
- * @param[in] idx : indeks początku
- * @return @f$p(p_0, p_1, \ldots, q_{idx}, q_{idx + 1}, \ldots)@f$
- */
+/** See PolyCompose. Performs composition starting from polynomial with index @p idx */
 static Poly PolyComposeFrom(const Poly *p, size_t idx, size_t k, const Poly q[]) {
     if (PolyIsCoeff(p))
         return PolyClone(p);

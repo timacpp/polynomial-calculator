@@ -22,20 +22,20 @@ set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra")
 # Wskazujemy pliki źródłowe.
 set(CALC_SOURCE_FILES
         src/main.c
-        src/polynomial/poly.c                   src/polynomial/poly.h
-        src/polynomial/io/poly_io.c src/polynomial/io/poly_io.h
-        src/polynomial/poly_stack.c src/polynomial/poly_stack.h
-        src/calculator/calc_error.c src/calculator/calc_error.h
-        src/calculator/calc_poly.c src/calculator/calc_poly.h
-        src/calculator/calc_command.c src/calculator/calc_command.h
-        src/polynomial/io/numeric_parser.c src/polynomial/io/numeric_parser.h
-        src/polynomial/io/poly_parser.c src/polynomial/io/poly_parser.h
+        src/poly/poly.c src/poly/poly.h
+        src/poly/io/poly_io.c src/poly/io/poly_io.h
+        src/poly/poly_stack.c src/poly/poly_stack.h
+        src/calc/calc_error.c src/calc/calc_error.h
+        src/calc/calc_poly.c src/calc/calc_poly.h
+        src/calc/calc_command.c src/calc/calc_command.h
+        src/poly/io/numeric_parser.c src/poly/io/numeric_parser.h
+        src/poly/io/poly_parser.c src/poly/io/poly_parser.h
         )
 
 set(TEST_SOURCE_FILES
         test/poly_test.c
-        src/polynomial/poly.c
-        src/polynomial/poly.h
+        src/poly/poly.c
+        src/poly/poly.h
         test/poly_data.h)
 
 # Wskazujemy plik wykonywalny kalkulatora.

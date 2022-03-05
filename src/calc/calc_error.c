@@ -1,6 +1,8 @@
 /** @file
   Implementation of calculator error managing.
 
+  @author Tymofii Vedmedenko
+  @copyright University of Warsaw
   @date 2021
 */
 

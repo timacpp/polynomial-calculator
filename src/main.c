@@ -1,16 +1,16 @@
 /** @file
-  Kalkulator wielomianów rzadkich wielu zmiennych.
+  Multi-variable polynomials calculator.
 
-  @authors Tymofii Vedmedenko <tv433559@students.mimuw.edu.pl>
-  @copyright Uniwersytet Warszawski
+  @author Tymofii Vedmedenko
+  @copyright University of Warsaw
   @date 2021
 */
 
 #include <ctype.h>
 #include <stdio.h>
 
-#include "calculator/calc_poly.h"
-#include "calculator/calc_command.h"
+#include "calc/calc_poly.h"
+#include "calc/calc_command.h"
 
 int PeekCharacter() {
     int nextChar = getchar();
@@ -50,7 +50,7 @@ int main(void) {
             LineIgnore();
         else if (LineRepresentsCommand())
             ProcessCommandInput(&stack, lineNumber);
-        else // Line represents a polynomial.
+        else // Line represents a poly.
             ProcessPolyInput(&stack, lineNumber);
 
         lineNumber++;

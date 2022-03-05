@@ -1,8 +1,8 @@
 /** @file
-  Interfejs stosu wielomianów rzadkich wielu zmiennych
+  Implementation of multi-variable polynomial stack.
 
-  @authors Tymofii Vedmedenko <tv433559@students.mimuw.edu.pl>
-  @copyright Uniwersytet Warszawski
+  @author Tymofii Vedmedenko
+  @copyright University of Warsaw
   @date 2021
 */
 
