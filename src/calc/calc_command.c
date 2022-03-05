@@ -133,15 +133,12 @@ static void ProcessDegCommand(PolyStack* stack, int lineNumber) {
 static bool CommandValidArgument(const char* source, size_t from) {
     size_t to = strlen(source);
 
-    // Konieczny warunek poprawnego argumentu: parsowanie się udało,
-    // spacja wcześniej, niezerowa długość, nie jest minusem.
     bool illegalCornerValues = source[from - 1] != ' ' || to - from == 0
-                               || (to - from == 1 && source[from] == '-');
+            || (to - from == 1 && source[from] == '-');
 
     if (errno || illegalCornerValues)
         return false;
 
-    // Dostateczny warunek poprawnego argumentu: składa się tylko z cyfr lub początkowego minusu.
     for (size_t i = from; i < to; i++) {
         bool isValidChar = (i == from && source[i] == '-') || isdigit(source[i]);
         if (!isValidChar)

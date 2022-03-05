@@ -23,13 +23,14 @@
  * @return parsed monomial
  */
 static Mono SubstringToMono(const char* source, size_t from, size_t to) {
-    size_t expStartIdx = to - 1; // Pierwza cyfra wykładnika jest conajwyżej w indeksie (to - 1).
+    /* First digit of an exponent is at most in index (to - 1) */
+    size_t expStartIdx = to - 1;
 
-    // Zmięjszamy expStartIdx dopóki on nie wskazuje na pierwszą cyfrę wykładnika.
+    /* Reducing expStartIdx until it points to a first digit of an exponent */
     while (source[expStartIdx - 1] != ',')
         expStartIdx--;
 
-    // Znając indeks początku wykładnika, wpółczynnik jest w zakresie [from + 1, expStartIdx - 1).
+    /* Coefficient is in range [from + 1, expStartIdx - 1) */
     return (Mono) {
             .exp = SubstringToExp(source, expStartIdx, to),
             .p = SubstringToPoly(source, from + 1, expStartIdx - 1)
@@ -43,7 +44,7 @@ static Mono SubstringToMono(const char* source, size_t from, size_t to) {
  * @return index of a closing parenthesis
  */
 static size_t FindParenthesisBalancePosition(const char* source, size_t pos) {
-    size_t depth = 0; // Stopień zagłębienia.
+    size_t depth = 0; /* Recursion depth of a polynomial */
 
     do {
         if (source[pos] == '(')
@@ -51,7 +52,7 @@ static size_t FindParenthesisBalancePosition(const char* source, size_t pos) {
         else if (source[pos] == ')')
             depth--;
         pos++;
-    } while (depth > 0); // Dopóki nie jesteś znów na zerowym stopniu.
+    } while (depth > 0);
 
     return pos; // source[pos - 1] == ')'
 }
@@ -77,9 +78,9 @@ static Poly SubstringToNonCoeffPoly(const char* source, size_t from, size_t to) 
             CHECK_NULL_PTR(monos);
         }
 
-        // W zakresie [monoStartIdx, monoEndIdx) się znajduje jednomian.
+        /* Range [monoStartIdx, monoEndIdx) now contains monomial */
         monos[size++] = SubstringToMono(source, monoStartIdx, monoEndIdx);
-        i = monoEndIdx; // Zmieniamy obecny indeks to końca jednomianu.
+        i = monoEndIdx;
     }
 
     Poly resPoly = PolyAddMonos(size, monos);
@@ -97,27 +98,22 @@ static Poly SubstringToNonCoeffPoly(const char* source, size_t from, size_t to) 
  * @return is range a number?
  */
 static bool SubstringIsNumber(const char* source, size_t from, size_t to) {
-    // Aby dowiedzieć że wielomian jest stały, wystarczy sprawdzić pierwszy i ostatni
-    // symbol podciągu napisu, ponieważ wiemy że source reprezentuje poprawny wielomian.
+    /* As source represents a correct polynomial, we can only check the corner values */
     return (isdigit(source[from]) || source[from] == '-') && isdigit(source[to - 1]);
 }
 
 Poly SubstringToPoly(const char* source, size_t from, size_t to) {
     assert(from <= to);
 
-    // W przypadku gdy wcześniej parsowanie wykryło liczbę poza zakresem,
-    // kończymy rekurencję drogą zwracania zerowego wielomianu.
+    /* In case of failed parsing zero polynomial is returned */
     if (errno)
         return PolyZero();
 
-    // Jeżeli pierwszy i ostatni symbol na zakresie [from, to) są cyframi
-    // z możliwością wiodącego znaku minus, to source reprezentuje stały
-    // wielomian, dlatego możemy odrazu go sparsować bez rekurencji.
     if (SubstringIsNumber(source, from, to)) {
         poly_coeff_t coeff = SubstringToCoeff(source, from, to);
         return PolyFromCoeff(coeff);
     }
 
-    // W przeciwnym przypadku parsujemy rekurencyjnie.
+    /* Polynomial is non-constant, so we parse it recursively */
     return SubstringToNonCoeffPoly(source, from, to);
 }

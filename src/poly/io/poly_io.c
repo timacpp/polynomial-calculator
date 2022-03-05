@@ -19,7 +19,7 @@
 
 /**
  * Prints monomial.
- * @param[in] m :  monomial
+ * @param[in] m : monomial
  */
 static void MonoPrint(const Mono* m) {
     printf("(");
@@ -36,7 +36,7 @@ void PolyPrint(const Poly* p) {
     for (size_t curMonoID = 0; curMonoID < p->size; curMonoID++) {
         MonoPrint(&p->arr[curMonoID]);
 
-        // Wypisujemy plus jeżeli dalej jeszcze występuje jednomian.
+        /* Only print plus sign if the monomial wasn't last */
         if (curMonoID < p->size - 1)
             printf("+");
     }
@@ -50,11 +50,9 @@ void PolyPrint(const Poly* p) {
  * @return Can @p cur be after @p prev?
  */
 static bool IsValidPolyCharAfter(char cur, char prev, char lastNonDigit) {
-    // Zmienna sprawdza czy prev wskazuje na cyfrę współczynnika, ponieważ
-    // po wystąpieniu '(' lub '-' następa cyfra jest częścią współczynnika
+    /* Variable to check whether prev refers to a digit of a coefficient */
     bool prevCoeff = (lastNonDigit == '(' || lastNonDigit == '-');
 
-    // Sprawdzamy wszystkie możliwe wartości cur uwzgłędniając poprzedni znak.
     if (isdigit(prev))
         return isdigit(cur) || (prevCoeff ? cur == ',' : cur == ')');
 
@@ -81,7 +79,7 @@ static bool IsValidPolyCharAfter(char cur, char prev, char lastNonDigit) {
  * @return Does @p stringPoly represent a correct non-constant polynomial?
  */
 static bool IsCorrectNonCoeffPoly(const char* stringPoly, size_t length) {
-    // Każdy wielomian niestały ma nawiasy z dwóch stron.
+    /* Each non-constant polynomial has parenthesis from the both sides */
     if (stringPoly[0] != '(' || stringPoly[length - 1] != ')')
         return false;
 
@@ -114,12 +112,10 @@ static bool IsCorrectNonCoeffPoly(const char* stringPoly, size_t length) {
  * @return Does @p stringPoly represent a correct constant polynomial?
  */
 static bool IsCorrectCoeffPoly(const char* stringPoly, size_t length) {
-    // Jak wielomian się składa tylko z minusu, to nie jest poprawny.
     if (stringPoly[0] == '-' && length == 1)
         return false;
 
     for (size_t i = 0; i < length; i++) {
-        // Każdy wielomian stały zawiera albo minus (tylko na początku) albo cyfry.
         bool validChar = isdigit(stringPoly[i]) || (i == 0 && stringPoly[i] == '-');
 
         if (!validChar)
@@ -191,7 +187,7 @@ bool ReadPoly(Poly* p) {
     if (correctPolyInput)
         *p = SubstringToPoly(buffer, 0, size);
 
-    // SubstringToPoly może zmienić errno.
+    /* SubstringToPoly could have modified errno state */
     bool successfulParsing = (errno == 0);
 
     if (!successfulParsing)
@@ -199,5 +195,5 @@ bool ReadPoly(Poly* p) {
 
     free(buffer);
 
-    return correctPolyInput && successfulParsing; // SuccessfulRead tutaj jest zawsze prawdą.
+    return correctPolyInput && successfulParsing;
 }

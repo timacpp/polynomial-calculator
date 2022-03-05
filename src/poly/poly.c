@@ -239,7 +239,7 @@ Poly PolyOwnMonos(size_t count, Mono *monos) {
         poly_exp_t curExp = MonoGetExp(&monos[curMonoID]);
         Mono midResult = monos[curMonoID];
 
-        // Sumujemy wszystkie jednomiany o tej samej potędze.
+        /* Summation of monomials with the same exponent */
         for (; curMonoID + 1 < count; curMonoID++) {
             if (MonoGetExp(&monos[curMonoID + 1]) != curExp)
                 break;
@@ -247,8 +247,9 @@ Poly PolyOwnMonos(size_t count, Mono *monos) {
             MonoDestroy(&monos[curMonoID + 1]);
         }
 
-        if (!MonoIsZero(&midResult)) // Jeżeli wynik sumowania nie jest zerem,
-            resPoly.arr[resMonoID++] = midResult; // to dodajemy go do końca resPoly.
+        /* Only non-zero sums should be appended to the result */
+        if (!MonoIsZero(&midResult))
+            resPoly.arr[resMonoID++] = midResult;
     }
 
     free(monos);
@@ -500,11 +501,10 @@ static Poly PolyComposeFrom(const Poly *p, size_t idx, size_t k, const Poly q[])
 
 /** See PolyComposeFrom. Composes monomial @p m with polynomials starting from index @p idx */
 static Poly MonoComposeFrom(const Mono *m, size_t idx, size_t k, const Poly q[]) {
-    // Podstawiamy zamiast argumentu odpowiedni wielomian.
     Poly toCompose = (idx < k ? q[idx] : PolyZero());
     Poly multinomial = PolyToPower(&toCompose, MonoGetExp(m));
 
-    // Rekurencyjnie kontynujemy złożenia bardziej zagłębionych wielomianów.
+    /** Recursive composition of deeper polynomials */
     Poly nextComposition = PolyComposeFrom(MonoGetPoly(m), idx + 1, k, q);
     Poly resPoly = PolyMul(&multinomial, &nextComposition);
 
