@@ -1,8 +1,13 @@
 ## About the project
 
 This is a user-friendly calculator for [multi-variable polynomials](https://en.wikipedia.org/wiki/Polynomial#Number_of_variables), based on [Reverse Polish Notation](https://en.wikipedia.org/wiki/Reverse_Polish_notation). 
-It provides a simple way of inputting the polynomials as well as a variety of operations to perform on them.
+It provides a simple way of inputting the polynomials as well as a variety of operations to perform on them. Installation:
 
+```
+mkdir release && cd release
+cmake .. # "-D CMAKE_BUILD_TYPE=Debug" for debug version
+make && make doc
+```
 ## Polynomial representation
 The polynomials are represented by either of the following forms:
 
@@ -19,7 +24,7 @@ From the definition above one polynomial can be represented in many ways, eg. ``
 In order to solve this problem, the polynomials are automatically reduced to their *minimal form*.
 In addition, the monomials are always being sorted in ascending order of the exponents.
 
-Let's take a look at some examples (more can be found in ```examples``` directory):
+Let's take a look at some examples:
 ```
 # Constant polynomial: f(x) = 42
 42
@@ -45,3 +50,7 @@ The calculator provides the following operations, which are called by entering t
  - ```NEG```, ```POP```, ```PRINT```, ```CLONE``` - negates/removes/prints/clones the top polynomial
  - ```DEG```, ```DEG_BY var```, ```AT x``` - prints degree/degree by variable/value at point of a top polynomial
  - ```COMPOSE k``` - pops k polynomials from stack and puts their composition on stack
+
+where ```var```, ```k``` are values of  ```size_t``` type and  ```x``` is ```poly_coeff_t```.
+
+For details, see  ```examples``` directory and full project documentation.
