@@ -1,53 +1,46 @@
 /**
-@mainpage Dokumentacja zadania wielomiany
+@mainpage Documentation for multi-variable polynomial calculator
 
-### Treść zadania
+### Polynomial representation
 
-Uwaga: aktualna treść zadania znajduje się w [Moodle](https://moodle.mimuw.edu.pl).
+The polynomials are represented by one of three forms:
 
-### Opis programu
-
-Tegoroczne duże zadanie polega na zaimplementowaniu ONP kalkulatora wielu zmiennych.
-
-
-
-Wielomiany wielu zmiennych są jednej z trzech postaci:
-
-(a) współczynnik - wielomian stały
-
-(b) (współczynnik, wykładnik) - jednomian
-
-(c) (współczynnik1, wykładnik1)+(współczynnik2, wykładnik2) - suma jednomianów
+(a) coefficient - constant polynomial
+(b) (coefficient,exponent) - non-constant polynomial of a single monomial
+(c) (coefficient1,exponent1)+(coefficient1,exponent1) - non-constant polynomial of many monomials
 
 
-Wpisując wielomian o odpowiednich poprawnych zakresach wartości on zostaje ustawiony na wierzchołek stosu.
+### Calculator representation
+
+The calculator is represented by Reverse Polish Notation, therefore polynomials are stored in stack data structure.
+In order to add polynomial to the stack, one has to enter a it considering the notation above.
 
 
+## Calculator commands
 
-Aby wykonać operacji nad wielomianami ze stosu trzeba wpisać odpowiednie polecenie:
+To process a command on a polynomial stack, one has to enter one of the following commands:
 
-(a) ADD/SUB/MUL - dodaje/odejmuje/mnoży dwa wielomiany ze stosu
+(a) ADD/SUB/MUL - adds/subtracts/multiples two stack-top polynomials
 
-(b) IS_ZERO/IS_COEFF/IS_EQ - sprawdza czy wielomian na wierzchołku stosu jest zerowy/stały/równy wielomianowi wyżej ze stosu
+(b) IS_ZERO/IS_COEFF/IS_EQ - checks whether a stack-top polynomial is zero/constant/equal to the next top polynomial
 
-(c) NEG/DEG - neguje/oblicza stopień wielomianu
+(c) NEG/DEG - negates/evaluates the degree of polynomial
 
-(c) COMPOSE k/DEG_BY var/AT x - składa k wielomianów/oblicza stopień wzgłędem zmiennej o indeksie var/oblicza wartość wielomianu w punkcie x
+(c) COMPOSE k/DEG_BY var/AT x - composes k stack-top polynomials/evaluates degree with respect to variable var/computes the value at point x
 
 
 
-Są również pomocnicze polecenia, między innymi:
+There are also helper commands:
+
+(a) POP - removes the stack-top polynomial
+
+(b) PRINT - prints the stack-top polynomial
+
+(c) ZERO - puts a zero polynomial on the top of stack
+
+(d) CLONE - puts a copy of a stack-top polynomial on the top of stack
 
 
-(a) POP - usuwa wielomian z wierzchołku stosu
-
-(b) PRINT - wypisuje wielomian z wierzchołku stosu
-
-(c) ZERO - ustawia wielomian zerowy na wierzchołek stosu
-
-(d) CLONE - ustawia kopię wielomianu z wierzchołku na wierzchołek
-
-
-W przypadku nieistniejącego polecenia, niepoprawnej wartości liczbowej lub złego zapisu wielomianu program wypisuje odpowiedni błąd.
+In case of unimplemented command, a number from invalid range or incorrect polynomial representation, programs displays an error.
 
 */
