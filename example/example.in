@@ -1,0 +1,53 @@
+# ---- Examples of invalid polynomials ----
+ 1
+(1)
+(1,-1)
+(1,)
+(1, 0)
+(1 , 0)
+((1,0),1
+
+# ---- Basic commands and polynomials ----
+1
+ZERO
+ADD
+PRINT
+
+CLONE
+NEG
+PRINT
+
+SUB
+MUL
+
+IS_COEFF
+IS_ZERO
+
+POP
+PRINT
+
+# ---- Nested polynomials and advanced command examples
+1
+(1,0)
+IS_EQ
+
+((1,0),0)+(0,42)
+IS_EQ
+
+(1,0)+(2,1)+(3,2)
+(2,1)+(3,2)+(1,0)
+IS_EQ
+
+MUL
+PRINT
+
+DEG
+DEG_BY 0
+
+COMPOSE 1
+PRINT
+
+(1,14)
+AT 3
+PRINT
+
